@@ -122,7 +122,7 @@ docs/
 
 | Rol | Fuente | Uso |
 |---|---|---|
-| Display serif | **Fraunces** (o PP Editorial New) | Hero, H1, H2 |
+| Display serif | **Fraunces** (Google Fonts, libre) | Hero, H1, H2 |
 | Sans grotesca | **Geist Sans** | Body, descripciones |
 | Mono | **Geist Mono** | Metadata, números, nav, stacks |
 
