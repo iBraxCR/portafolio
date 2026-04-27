@@ -1,0 +1,72 @@
+---
+import { t, type Locale } from '../lib/i18n';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="cta">
+    <h2>{t('cta.title', lang)}</h2>
+    <a href="mailto:hola@joschua.dev" class="email">hola@joschua.dev</a>
+  </div>
+
+  <div class="meta">
+    <span>© {year} Joschua Barahona</span>
+    <ul class="socials">
+      <li><a href="https://github.com/joschua" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="https://linkedin.com/in/joschua" target="_blank" rel="noopener">LinkedIn</a></li>
+    </ul>
+    <span>{t('footer.madeIn', lang)}</span>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding: 8rem var(--pad-x) 3rem;
+    border-top: 1px solid var(--line);
+    margin-top: 8rem;
+  }
+  .cta {
+    margin-bottom: 6rem;
+  }
+  .cta h2 {
+    font-family: var(--font-serif);
+    font-size: var(--fs-h1);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.5rem;
+  }
+  .email {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-muted);
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 2px;
+  }
+  .email:hover { color: var(--fg); }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-muted);
+    text-transform: lowercase;
+  }
+  .socials {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .socials a:hover { color: var(--fg); }
+</style>
