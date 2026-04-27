@@ -56,3 +56,16 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Scroll-reveal base state */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

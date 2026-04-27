@@ -28,13 +28,13 @@ const featured = allProjects.sort((a, b) => a.data.number - b.data.number);
 ---
 
 <BaseLayout title={title} description={description} lang={lang}>
-  <section class="hero">
+  <section class="hero reveal">
     <h1>Joschua Barahona</h1>
     <p class="role">{t('hero.role', lang)}</p>
     <Meta items={[t('hero.location', lang)]} class="location" />
   </section>
 
-  <section class="works">
+  <section class="works reveal">
     <header class="section-head">
       <Meta items={['01']} />
       <h2>{t('works.selected', lang)}</h2>

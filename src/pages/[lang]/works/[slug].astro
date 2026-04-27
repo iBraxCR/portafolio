@@ -43,7 +43,7 @@ const nextSlug = nextEntry.data.urlSlug.replace(/^(es|en)-/, '');
 <BaseLayout title={entry.data.title} description={entry.data.description} lang={lang}>
 
   <!-- HERO IMAGE (full width) -->
-  <section class="project-hero">
+  <section class="project-hero reveal">
     {entry.data.cover ? (
       <div class="hero-image">
         <Image src={entry.data.cover} alt={entry.data.title} />
@@ -54,7 +54,7 @@ const nextSlug = nextEntry.data.urlSlug.replace(/^(es|en)-/, '');
   </section>
 
   <!-- LAYOUT: sidebar metadata + content -->
-  <div class="project-layout">
+  <div class="project-layout reveal">
 
     <!-- SIDEBAR -->
     <aside class="project-sidebar">
@@ -129,7 +129,7 @@ const nextSlug = nextEntry.data.urlSlug.replace(/^(es|en)-/, '');
   )}
 
   <!-- NEXT PROJECT -->
-  <section class="next-project">
+  <section class="next-project reveal">
     <span class="next-label">{t('works.nextProject', lang)}</span>
     <a href={`/${lang}/works/${nextSlug}/`} class="next-link">
       {nextEntry.data.title}
