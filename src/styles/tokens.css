@@ -1,0 +1,35 @@
+:root {
+  /* Color - dark editorial */
+  --bg:        #0A0A0A;
+  --bg-elev:   #141414;
+  --fg:        #EDEDED;
+  --fg-muted:  #8A8A8A;
+  --fg-subtle: #4A4A4A;
+  --accent:    #E8E3D8;
+  --line:      rgba(255, 255, 255, 0.08);
+
+  /* Typography scale - fluid */
+  --fs-display: clamp(3.5rem, 8vw, 9rem);
+  --fs-h1:      clamp(2.25rem, 5vw, 4.5rem);
+  --fs-h2:      clamp(1.75rem, 3.5vw, 3rem);
+  --fs-body:    1rem;
+  --fs-small:   0.8125rem;
+
+  /* Spacing */
+  --pad-x:  24px;
+  --max-w:  1440px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms;
+  --dur-base: 320ms;
+  --dur-slow: 600ms;
+}
+
+@media (min-width: 768px) {
+  :root { --pad-x: 48px; }
+}
+
+@media (min-width: 1280px) {
+  :root { --pad-x: 80px; }
+}
