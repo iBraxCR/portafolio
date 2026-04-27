@@ -1,5 +1,7 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProjectCard from '../../../components/ProjectCard.astro';
 import { t, locales, isLocale, type Locale } from '../../../lib/i18n';
 
 export function getStaticPaths() {
@@ -9,34 +11,82 @@ export function getStaticPaths() {
 const { lang: rawLang } = Astro.params;
 if (!isLocale(rawLang)) throw new Error(`Invalid locale: ${rawLang}`);
 const lang: Locale = rawLang;
+
+const description =
+  lang === 'es' ? 'Listado completo de proyectos.' : 'Full projects index.';
+
+const allProjects = await getCollection('projects', ({ data }) =>
+  data.lang === lang && !data.draft
+);
+const projects = allProjects.sort((a, b) => a.data.number - b.data.number);
 ---
 
-<BaseLayout
-  title={t('works.all', lang)}
-  description={lang === 'es' ? 'Listado completo de proyectos.' : 'Full projects index.'}
-  lang={lang}
->
-  <section class="page">
+<BaseLayout title={t('works.all', lang)} description={description} lang={lang}>
+  <section class="page-hero">
+    <p class="page-hero-label">02</p>
     <h1>{t('works.all', lang)}</h1>
-    <p>Coming soon.</p>
+  </section>
+
+  <section class="projects-section">
+    <div class="projects-grid">
+      {projects.map((entry) => {
+        const cleanSlug = entry.data.urlSlug.replace(/^(es|en)-/, '');
+        return (
+          <ProjectCard
+            title={entry.data.title}
+            slug={cleanSlug}
+            lang={lang}
+            number={entry.data.number}
+            year={entry.data.year}
+            category={entry.data.category}
+            cover={entry.data.cover}
+            coverHover={entry.data.coverHover}
+          />
+        );
+      })}
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .page {
-    padding: 8rem var(--pad-x);
+  .page-hero {
+    padding: 8rem var(--pad-x) 4rem;
     max-width: var(--max-w);
     margin: 0 auto;
   }
-  .page h1 {
+
+  .page-hero-label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-subtle);
+    margin: 0 0 1.5rem;
+  }
+
+  .page-hero h1 {
     font-family: var(--font-serif);
     font-size: var(--fs-h1);
     font-weight: 400;
-    margin: 0 0 2rem;
+    margin: 0;
+    letter-spacing: -0.02em;
   }
-  .page p {
-    color: var(--fg-muted);
-    font-family: var(--font-mono);
-    font-size: var(--fs-small);
+
+  .projects-section {
+    padding: 0 var(--pad-x) 8rem;
+    max-width: var(--max-w);
+    margin: 0 auto;
+    border-top: 1px solid var(--line);
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem 2rem;
+    padding-top: 4rem;
+  }
+
+  @media (max-width: 767px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
