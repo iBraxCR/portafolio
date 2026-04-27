@@ -1,0 +1,42 @@
+---
+title: "POS Tree Codes"
+slug: "es-pos-tree-codes"
+lang: "es"
+number: 2
+year: 2024
+role:
+  - "Desarrollador Fullstack"
+category: "tool"
+stack:
+  frontend:
+    - "Java 21 Swing"
+    - "PHP"
+  backend:
+    - "Spring Boot 3.5"
+    - "MySQL 8"
+  infra:
+    - "DGT API (Facturación Electrónica CR)"
+cover: ~/assets/projects/pos-tree-codes-cover.png
+coverHover: ~/assets/projects/pos-tree-codes-hover.png
+gallery:
+  - ~/assets/projects/pos-tree-codes-gallery-1.png
+  - ~/assets/projects/pos-tree-codes-gallery-2.png
+  - ~/assets/projects/pos-tree-codes-gallery-3.png
+  - ~/assets/projects/pos-tree-codes-gallery-4.png
+featured: true
+draft: false
+description: "Suite POS empresarial híbrida con facturación electrónica certificada para Costa Rica. Desktop Java + WebPOS + API REST."
+publishedAt: 2024-06-01
+---
+
+## El problema
+
+La facturación electrónica en Costa Rica no es opcional: la norma DGT-R-48-2016 del Ministerio de Hacienda obliga a todo contribuyente a emitir comprobantes electrónicos firmados digitalmente y enviarlos a la plataforma de Hacienda en tiempo real. La mayoría de las soluciones POS disponibles en el mercado son genéricas o de origen extranjero, con integraciones locales deficientes y costos de licencia prohibitivos para negocios medianos. El objetivo era construir una suite completa, desde la caja hasta la API, adaptada desde el inicio a la normativa costarricense.
+
+## La solución
+
+POS Tree Codes es una suite híbrida de tres capas. La aplicación principal es un cliente de escritorio en Java 21 Swing pensado para el punto de venta principal: maneja ventas, cierres de caja, gestión de inventario y emisión de facturas electrónicas con firma digital. Para puntos de venta adicionales —meseros, bodegas, puntos móviles— existe un WebPOS en PHP, más liviano, que consume la misma API REST. El núcleo del sistema es una API REST en Spring Boot 3.5 que centraliza la lógica de negocio, la comunicación con la DGT y la persistencia en MySQL 8.
+
+## Arquitectura
+
+La base de datos tiene 57 tablas que cubren desde el catálogo de productos y las tablas de precios diferenciados hasta el historial de documentos electrónicos y los logs de comunicación con Hacienda. El módulo de facturación electrónica implementa la generación del XML según el esquema XSD oficial, la firma con certificado digital (PKCS#12) y el envío asíncrono a la API de la DGT con reintentos automáticos ante fallos de conectividad. El cliente Swing tiene más de 250 clases Java organizadas en capas (presentación, servicio, repositorio) y se distribuye como un ejecutable nativo con instalador para Windows. La autenticación entre el WebPOS y la API usa JWT con rotación de tokens, mientras que el cliente desktop mantiene una sesión persistente cifrada localmente.

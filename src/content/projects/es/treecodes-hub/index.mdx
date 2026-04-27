@@ -1,0 +1,31 @@
+---
+title: "TreeCodes Hub"
+slug: "es-treecodes-hub"
+lang: "es"
+number: 3
+year: 2024
+role:
+  - "Desarrollador Fullstack"
+category: "tool"
+stack:
+  frontend:
+    - "Java 21 Swing"
+  backend:
+    - "Spring Boot"
+featured: false
+draft: false
+description: "Launcher desktop para el ecosistema TreeCodes. Gestiona instalación, actualizaciones y licencias con verificación de firma digital."
+publishedAt: 2024-03-01
+---
+
+## El problema
+
+Al desarrollar varias aplicaciones desktop bajo el ecosistema TreeCodes —el POS, herramientas auxiliares, utilidades de configuración— surgió un problema operativo: distribuir actualizaciones a los clientes de forma segura y controlada. Enviar instaladores por correo o compartir enlaces directos no solo es difícil de mantener, sino que abre la puerta a que versiones piratas o modificadas circulen como si fueran oficiales. Era necesario un punto de control centralizado que manejara el ciclo de vida completo de cada aplicación del ecosistema.
+
+## La solución
+
+TreeCodes Hub es una aplicación desktop en Java 21 Swing que actúa como launcher y gestor del ecosistema. Al abrirla, el usuario ve todas las aplicaciones a las que tiene licencia activa, su versión instalada, y si existe una actualización disponible. Desde ahí puede instalar, actualizar o lanzar cualquier aplicación con un solo clic. El hub se comunica con una API en Spring Boot que sirve como repositorio central de versiones y metadatos.
+
+## Arquitectura
+
+Cada artefacto distribuido por el hub lleva una firma digital que el cliente verifica antes de ejecutar la instalación. Si la firma no coincide con el certificado registrado en el servidor, el proceso se cancela y se alerta al usuario. Esto garantiza que ningún binario modificado o de origen desconocido pueda instalarse a través del hub. El sistema de licencias valida en línea el estado de cada suscripción: si una licencia expira o es revocada, el hub lo refleja en la siguiente apertura y deshabilita el acceso a la aplicación correspondiente sin necesidad de intervención manual en el cliente.

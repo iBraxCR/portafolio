@@ -1,0 +1,42 @@
+---
+title: "POS Tree Codes"
+slug: "en-pos-tree-codes"
+lang: "en"
+number: 2
+year: 2024
+role:
+  - "Full Stack Developer"
+category: "tool"
+stack:
+  frontend:
+    - "Java 21 Swing"
+    - "PHP"
+  backend:
+    - "Spring Boot 3.5"
+    - "MySQL 8"
+  infra:
+    - "DGT API (Facturación Electrónica CR)"
+cover: ~/assets/projects/pos-tree-codes-cover.png
+coverHover: ~/assets/projects/pos-tree-codes-hover.png
+gallery:
+  - ~/assets/projects/pos-tree-codes-gallery-1.png
+  - ~/assets/projects/pos-tree-codes-gallery-2.png
+  - ~/assets/projects/pos-tree-codes-gallery-3.png
+  - ~/assets/projects/pos-tree-codes-gallery-4.png
+featured: true
+draft: false
+description: "Hybrid enterprise POS suite with certified electronic invoicing for Costa Rica. Java desktop + WebPOS + REST API."
+publishedAt: 2024-06-01
+---
+
+## The problem
+
+Electronic invoicing in Costa Rica is mandatory: regulation DGT-R-48-2016 from the Ministry of Finance requires every taxpayer to issue digitally signed electronic receipts and transmit them to the government platform in real time. Most POS solutions available on the market are generic or foreign-built, with poor local integrations and licensing costs that are out of reach for mid-sized businesses. The goal was to build a complete suite — from the cash register to the API — designed from the ground up around Costa Rican regulations.
+
+## The solution
+
+POS Tree Codes is a three-layer hybrid suite. The primary application is a Java 21 Swing desktop client designed for the main point of sale: it handles sales, cash reconciliation, inventory management, and electronic invoice generation with digital signatures. For additional sales points — waitstaff, warehouses, mobile stations — there is a PHP-based WebPOS, lighter in scope, that consumes the same REST API. The core of the system is a REST API built with Spring Boot 3.5 that centralizes business logic, DGT communication, and data persistence in MySQL 8.
+
+## Architecture
+
+The database has 57 tables covering everything from the product catalog and tiered pricing to the electronic document history and communication logs with the tax authority. The electronic invoicing module handles XML generation according to the official XSD schema, digital signing with a PKCS#12 certificate, and asynchronous submission to the DGT API with automatic retries on connectivity failures. The Swing client contains over 250 Java classes organized into presentation, service, and repository layers, and is distributed as a native Windows executable with an installer. Authentication between the WebPOS and the API uses JWT with token rotation, while the desktop client maintains an encrypted persistent session stored locally.

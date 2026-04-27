@@ -17,7 +17,7 @@ const projects = defineCollection({
         backend: z.array(z.string()).optional(),
         infra: z.array(z.string()).optional(),
       }),
-      cover: image(),
+      cover: image().optional(),
       coverHover: image().optional(),
       gallery: z.array(image()).optional(),
       url: z.string().url().optional(),

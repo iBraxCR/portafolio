@@ -1,0 +1,42 @@
+---
+title: "Agenda IA"
+slug: "es-agenda-ia"
+lang: "es"
+number: 1
+year: 2025
+role:
+  - "Desarrollador Fullstack"
+category: "web-app"
+stack:
+  frontend:
+    - "React"
+    - "Vite"
+    - "TypeScript"
+  backend:
+    - "Node.js"
+    - "Express"
+    - "Socket.IO"
+    - "Redis"
+    - "MySQL"
+  infra:
+    - "WhatsApp Cloud API"
+    - "Claude AI"
+    - "Google Calendar API"
+cover: ~/assets/projects/agenda-ia-cover.png
+featured: true
+draft: false
+description: "SaaS de agendamiento inteligente vía WhatsApp. El bot entiende lenguaje natural y confirma citas en Google Calendar."
+publishedAt: 2025-01-15
+---
+
+## El problema
+
+La mayoría de los negocios pequeños —clínicas, salones de belleza, consultorios— siguen coordinando citas por WhatsApp de forma manual: el dueño recibe un mensaje, revisa su agenda en papel o en el calendario del celular, y responde con disponibilidad. El proceso es lento, propenso a errores de doble reserva y no escala cuando hay múltiples empleados o sucursales. El reto era automatizar ese flujo sin obligar al cliente final a cambiar de canal: WhatsApp es donde ya está.
+
+## La solución
+
+Agenda IA es un SaaS multi-tenant donde cada negocio suscrito recibe un número de WhatsApp dedicado. Cuando un cliente envía un mensaje como "quiero una cita el lunes a las 10 para un corte", el sistema lo captura a través de la WhatsApp Cloud API, lo envía a Claude AI para extracción de intención y entidades (fecha, hora, servicio), valida disponibilidad contra Google Calendar y confirma la reserva respondiendo en lenguaje natural al mismo hilo de conversación. Todo en menos de tres segundos.
+
+## Arquitectura
+
+El backend corre en Node.js con Express. Redis maneja la cola de mensajes entrantes para absorber picos de tráfico sin perder webhooks, y Socket.IO emite eventos en tiempo real al panel de administración —construido en React + Vite + TypeScript— donde el dueño del negocio ve las citas confirmadas, canceladas y pendientes sin necesidad de refrescar la página. La integración con Google Calendar API es bidireccional: si alguien cancela desde el panel, el evento se elimina del calendario y el bot notifica al cliente por WhatsApp. MySQL almacena el historial de conversaciones, la configuración por tenant y las reglas de disponibilidad (horarios, servicios, duración por tipo de cita). El modelo multi-tenant se resuelve a nivel de base de datos con un campo `tenant_id` en todas las tablas críticas, y los webhooks de WhatsApp se enrutan por número de teléfono al contexto correcto.

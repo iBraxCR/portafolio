@@ -1,0 +1,35 @@
+---
+title: "Aura Pura Perfumería"
+slug: "es-aura-pura"
+lang: "es"
+number: 4
+year: 2024
+role:
+  - "Desarrollador Fullstack"
+category: "web-app"
+stack:
+  frontend:
+    - "Flask/Jinja"
+    - "CSS"
+  backend:
+    - "Flask"
+    - "MySQL"
+  infra:
+    - "Python Tkinter (Admin Desktop)"
+featured: false
+draft: false
+description: "Catálogo web de perfumería artesanal con admin desktop. API RESTful, modales de producto y efectos visuales modernos."
+publishedAt: 2024-09-01
+---
+
+## El problema
+
+Aura Pura es una perfumería artesanal que hasta el momento de este proyecto vendía exclusivamente por redes sociales y de forma presencial. No tenía catálogo en línea ni forma de que los clientes exploraran el inventario completo con detalles de cada fragancia. Al mismo tiempo, la dueña necesitaba una herramienta para gestionar productos, precios y disponibilidad sin depender de un desarrollador para cada cambio. El presupuesto era limitado, así que la solución tenía que ser eficiente en tiempo de desarrollo y cero costo en infraestructura adicional.
+
+## La solución
+
+El resultado es un catálogo web construido con Flask y Jinja2, con una interfaz que prioriza la presentación visual del producto: modales de detalle con efecto parallax, transiciones CSS suaves y una paleta que refuerza la identidad de la marca. Los visitantes pueden explorar la colección, filtrar por familia olfativa y ver ficha completa de cada perfume sin salir de la página. La gestión del inventario recae en una aplicación de escritorio en Python Tkinter que la dueña usa desde su computador: agrega productos, sube fotos, edita precios y controla el stock desde una interfaz sencilla que no requiere conocimientos técnicos.
+
+## Arquitectura
+
+Flask sirve tanto el frontend —a través de las plantillas Jinja2— como la API RESTful que consume la aplicación Tkinter. Los endpoints de escritura están protegidos con autenticación básica, suficiente para el contexto de un solo administrador. Las imágenes de producto se almacenan localmente en el servidor y se sirven como archivos estáticos. La decisión de usar Flask como monolito en lugar de separar frontend y API en proyectos distintos fue deliberada: redujo la complejidad de despliegue a un solo proceso y permitió iterar rápido sobre el diseño sin gestionar CORS ni múltiples servicios. Tkinter fue elegido porque la dueña ya usaba Windows y no requería instalación de dependencias adicionales más allá del ejecutable empaquetado con PyInstaller.

@@ -1,0 +1,31 @@
+---
+title: "TreeCodes Hub"
+slug: "en-treecodes-hub"
+lang: "en"
+number: 3
+year: 2024
+role:
+  - "Full Stack Developer"
+category: "tool"
+stack:
+  frontend:
+    - "Java 21 Swing"
+  backend:
+    - "Spring Boot"
+featured: false
+draft: false
+description: "Desktop launcher for the TreeCodes ecosystem. Manages installations, updates, and licenses with digital signature verification."
+publishedAt: 2024-03-01
+---
+
+## The problem
+
+As multiple desktop applications were developed under the TreeCodes ecosystem — the POS, auxiliary tools, configuration utilities — a practical distribution problem emerged: how to deliver updates to clients securely and at scale. Sending installers by email or sharing direct download links is hard to maintain and opens the door to modified or pirated versions circulating as if they were official releases. A centralized control point was needed to manage the full lifecycle of every application in the ecosystem.
+
+## The solution
+
+TreeCodes Hub is a Java 21 Swing desktop application that acts as a launcher and lifecycle manager for the ecosystem. When opened, the user sees all applications their active license covers, the currently installed version, and whether an update is available. From there, they can install, update, or launch any application with a single click. The hub communicates with a Spring Boot API that serves as the central repository for version metadata and release artifacts.
+
+## Architecture
+
+Every artifact distributed through the hub carries a digital signature that the client verifies before executing the installation. If the signature does not match the certificate registered on the server, the process is aborted and the user is alerted. This ensures that no modified or unrecognized binary can be installed through the hub under any circumstances. The licensing system validates each subscription's status online: if a license expires or is revoked, the hub reflects that change on the next startup and disables access to the corresponding application without requiring any manual intervention on the client side.

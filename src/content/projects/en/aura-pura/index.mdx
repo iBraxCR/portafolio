@@ -1,0 +1,35 @@
+---
+title: "Aura Pura Perfumería"
+slug: "en-aura-pura"
+lang: "en"
+number: 4
+year: 2024
+role:
+  - "Full Stack Developer"
+category: "web-app"
+stack:
+  frontend:
+    - "Flask/Jinja"
+    - "CSS"
+  backend:
+    - "Flask"
+    - "MySQL"
+  infra:
+    - "Python Tkinter (Admin Desktop)"
+featured: false
+draft: false
+description: "Artisanal perfume catalog web app with desktop admin. RESTful API, product modals, and modern visual effects."
+publishedAt: 2024-09-01
+---
+
+## The problem
+
+Aura Pura is an artisanal perfume brand that, before this project, sold exclusively through social media and in person. There was no online catalog, no way for customers to browse the full inventory with product details, and no tool for the owner to manage products and pricing without developer involvement for every change. The budget was tight, so the solution needed to be efficient in development time and carry zero additional infrastructure cost.
+
+## The solution
+
+The result is a web catalog built with Flask and Jinja2, with an interface that prioritizes visual product presentation: detail modals with a parallax effect, smooth CSS transitions, and a color palette that reinforces the brand identity. Visitors can browse the collection, filter by fragrance family, and view the full profile of each perfume without leaving the page. Inventory management is handled by a Python Tkinter desktop application that the owner runs on her own computer: she can add products, upload photos, edit prices, and control stock from a straightforward interface that requires no technical knowledge.
+
+## Architecture
+
+Flask serves both the frontend — through Jinja2 templates — and the RESTful API consumed by the Tkinter admin application. Write endpoints are protected with basic authentication, sufficient for a single-administrator context. Product images are stored locally on the server and served as static files. The decision to use Flask as a monolith rather than splitting the frontend and API into separate projects was deliberate: it reduced deployment complexity to a single process and allowed fast iteration on the design without managing CORS or multiple services. Tkinter was chosen because the owner already used Windows and the admin tool required no additional dependencies beyond the executable bundled with PyInstaller.

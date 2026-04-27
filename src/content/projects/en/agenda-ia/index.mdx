@@ -1,0 +1,42 @@
+---
+title: "Agenda IA"
+slug: "en-agenda-ia"
+lang: "en"
+number: 1
+year: 2025
+role:
+  - "Full Stack Developer"
+category: "web-app"
+stack:
+  frontend:
+    - "React"
+    - "Vite"
+    - "TypeScript"
+  backend:
+    - "Node.js"
+    - "Express"
+    - "Socket.IO"
+    - "Redis"
+    - "MySQL"
+  infra:
+    - "WhatsApp Cloud API"
+    - "Claude AI"
+    - "Google Calendar API"
+cover: ~/assets/projects/agenda-ia-cover.png
+featured: true
+draft: false
+description: "AI-powered WhatsApp scheduling SaaS. The bot understands natural language and confirms appointments in Google Calendar."
+publishedAt: 2025-01-15
+---
+
+## The problem
+
+Most small businesses — clinics, beauty salons, private practices — still coordinate appointments over WhatsApp manually: the owner receives a message, checks a paper calendar or the phone's native calendar app, and replies with availability. The process is slow, prone to double-booking errors, and doesn't scale when multiple employees or locations are involved. The challenge was to automate that workflow without forcing the end customer to switch channels: WhatsApp is already where they are.
+
+## The solution
+
+Agenda IA is a multi-tenant SaaS where each subscribed business gets a dedicated WhatsApp number. When a customer sends a message like "I'd like an appointment on Monday at 10 for a haircut", the system captures it through the WhatsApp Cloud API, forwards it to Claude AI for intent extraction and entity recognition (date, time, service type), validates availability against Google Calendar, and confirms the booking by responding in natural language within the same conversation thread — all in under three seconds.
+
+## Architecture
+
+The backend runs on Node.js with Express. Redis handles the incoming message queue to absorb traffic spikes without dropping webhooks, and Socket.IO pushes real-time events to the admin dashboard — built with React, Vite, and TypeScript — where business owners see confirmed, cancelled, and pending appointments without refreshing the page. The Google Calendar API integration is bidirectional: if an appointment is cancelled from the dashboard, the event is removed from the calendar and the bot notifies the customer over WhatsApp. MySQL stores the conversation history, per-tenant configuration, and availability rules (schedules, services, duration per appointment type). Multi-tenancy is implemented at the database level with a `tenant_id` column on all critical tables, and incoming WhatsApp webhooks are routed by phone number to the correct tenant context.
