@@ -5,7 +5,7 @@ const projects = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string(),
-      slug: z.string(),
+      urlSlug: z.string(),
       lang: z.enum(['es', 'en']),
       number: z.number().int().positive(),
       year: z.number().int(),
@@ -34,7 +34,7 @@ const posts = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string(),
-      slug: z.string(),
+      urlSlug: z.string(),
       lang: z.enum(['es', 'en']),
       excerpt: z.string().max(200),
       cover: image().optional(),

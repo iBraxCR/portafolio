@@ -1,6 +1,8 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Meta from '../../components/Meta.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
 import { t, locales, isLocale, type Locale } from '../../lib/i18n';
 
 export function getStaticPaths() {
@@ -18,6 +20,11 @@ const description =
   lang === 'es'
     ? 'Portafolio de Joschua Barahona — desarrollador fullstack.'
     : "Joschua Barahona's portfolio — fullstack developer.";
+
+const allProjects = await getCollection('projects', ({ data }) =>
+  data.lang === lang && data.featured && !data.draft
+);
+const featured = allProjects.sort((a, b) => a.data.number - b.data.number);
 ---
 
 <BaseLayout title={title} description={description} lang={lang}>
@@ -32,7 +39,26 @@ const description =
       <Meta items={['01']} />
       <h2>{t('works.selected', lang)}</h2>
     </header>
-    <p class="placeholder">Coming soon.</p>
+    <div class="works-grid">
+      {featured.map((entry) => {
+        const cleanSlug = entry.data.urlSlug.replace(/^(es|en)-/, '');
+        return (
+          <ProjectCard
+            title={entry.data.title}
+            slug={cleanSlug}
+            lang={lang}
+            number={entry.data.number}
+            year={entry.data.year}
+            category={entry.data.category}
+            cover={entry.data.cover}
+            coverHover={entry.data.coverHover}
+          />
+        );
+      })}
+    </div>
+    <div class="works-more">
+      <a href={`/${lang}/works/`}>&#8594; {t('works.all', lang)}</a>
+    </div>
   </section>
 </BaseLayout>
 
@@ -81,9 +107,34 @@ const description =
     font-weight: 400;
     margin: 0;
   }
-  .placeholder {
-    color: var(--fg-muted);
+  .works-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem 2rem;
+  }
+
+  @media (max-width: 767px) {
+    .works-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .works-more {
+    margin-top: 3rem;
     font-family: var(--font-mono);
     font-size: var(--fs-small);
+    color: var(--fg-muted);
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+  }
+
+  .works-more a {
+    color: var(--fg);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .works-more a:hover {
+    color: var(--accent);
   }
 </style>
