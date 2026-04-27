@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Meta from '../../components/Meta.astro';
+import { t, locales, isLocale, type Locale } from '../../lib/i18n';
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: rawLang } = Astro.params;
+if (!isLocale(rawLang)) {
+  throw new Error(`Invalid locale: ${rawLang}`);
+}
+const lang: Locale = rawLang;
+
+const title = 'Joschua Barahona';
+const description =
+  lang === 'es'
+    ? 'Portafolio de Joschua Barahona — desarrollador fullstack.'
+    : "Joschua Barahona's portfolio — fullstack developer.";
+---
+
+<BaseLayout title={title} description={description} lang={lang}>
+  <section class="hero">
+    <h1>Joschua Barahona</h1>
+    <p class="role">{t('hero.role', lang)}</p>
+    <Meta items={[t('hero.location', lang)]} class="location" />
+  </section>
+
+  <section class="works">
+    <header class="section-head">
+      <Meta items={['01']} />
+      <h2>{t('works.selected', lang)}</h2>
+    </header>
+    <p class="placeholder">Coming soon.</p>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 8rem var(--pad-x) 6rem;
+    max-width: var(--max-w);
+    margin: 0 auto;
+  }
+  .hero h1 {
+    font-family: var(--font-serif);
+    font-size: var(--fs-display);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+  .hero .role {
+    margin: 1.5rem 0 0;
+    font-size: var(--fs-h2);
+    font-family: var(--font-serif);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--fg-muted);
+  }
+  .hero .location {
+    display: block;
+    margin-top: 2rem;
+  }
+
+  .works {
+    padding: 4rem var(--pad-x);
+    max-width: var(--max-w);
+    margin: 0 auto;
+    border-top: 1px solid var(--line);
+  }
+  .section-head {
+    display: flex;
+    gap: 2rem;
+    align-items: baseline;
+    margin-bottom: 3rem;
+  }
+  .section-head h2 {
+    font-family: var(--font-serif);
+    font-size: var(--fs-h2);
+    font-weight: 400;
+    margin: 0;
+  }
+  .placeholder {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+  }
+</style>
