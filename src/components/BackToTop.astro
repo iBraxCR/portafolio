@@ -51,7 +51,6 @@
     border-radius: 50%;
   }
 
-  /* Fondo base — visible antes de que cargue el shader */
   #btt-metal::before {
     content: "";
     position: absolute;
@@ -71,7 +70,6 @@
     z-index: 2;
   }
 
-  /* Borde conic-gradient con mask */
   .btt-outline::before {
     content: "";
     position: absolute;
@@ -83,7 +81,6 @@
     -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     mask-composite: exclude;
-    transition: opacity 300ms ease;
   }
 
   .back-to-top:hover .btt-outline::before {
@@ -105,42 +102,18 @@
   }
 </style>
 
+<!-- Lógica show/hide y scroll-to-top (Vite bundle normal) -->
 <script>
-  import { liquidMetalFragmentShader, ShaderMount } from '@paper-design/shaders';
-
-  const container = document.getElementById('btt-metal');
   const btn = document.getElementById('back-to-top');
 
-  // Inicializar shader (solo si el usuario no prefiere reducción de movimiento)
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (container && !prefersReduced) {
-    new ShaderMount(container, liquidMetalFragmentShader, {
-      u_repetition: 1.5,
-      u_softness:   0.5,
-      u_shiftRed:   0.3,
-      u_shiftBlue:  0.3,
-      u_distortion: 0,
-      u_contour:    0,
-      u_angle:      100,
-      u_scale:      1.5,
-      u_shape:      1,
-      u_offsetX:    0.1,
-      u_offsetY:   -0.1,
-    }, undefined, 0.6);
-  }
-
-  // Mostrar/ocultar según posición de scroll
-  const onScroll = () => {
+  window.addEventListener('scroll', () => {
     if (window.scrollY > 300) {
       btn?.classList.add('visible');
     } else {
       btn?.classList.remove('visible');
     }
-  };
-  window.addEventListener('scroll', onScroll, { passive: true });
+  }, { passive: true });
 
-  // Click → scroll al top (vía Lenis si está disponible)
   btn?.addEventListener('click', () => {
     const lenis = (window as any).__lenis;
     if (lenis) {
@@ -149,4 +122,33 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
+</script>
+
+<!-- Shader liquid metal (CDN aislado — no afecta el bundle principal) -->
+<script is:inline type="module">
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    try {
+      const { liquidMetalFragmentShader, ShaderMount } = await import(
+        'https://esm.sh/@paper-design/shaders'
+      );
+      const container = document.getElementById('btt-metal');
+      if (container && ShaderMount) {
+        new ShaderMount(container, liquidMetalFragmentShader, {
+          u_repetition: 1.5,
+          u_softness:   0.5,
+          u_shiftRed:   0.3,
+          u_shiftBlue:  0.3,
+          u_distortion: 0,
+          u_contour:    0,
+          u_angle:      100,
+          u_scale:      1.5,
+          u_shape:      1,
+          u_offsetX:    0.1,
+          u_offsetY:   -0.1,
+        }, undefined, 0.6);
+      }
+    } catch (e) {
+      // Shader falla silenciosamente — el botón sigue funcional con CSS fallback
+    }
+  }
 </script>
