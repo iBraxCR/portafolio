@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "works": "Trabajos",
+    "about": "Sobre mí",
+    "insights": "Ideas"
+  },
+  "hero": {
+    "role": "Fullstack developer",
+    "location": "basado en ecuador"
+  },
+  "works": {
+    "selected": "Trabajos seleccionados",
+    "all": "Todos los proyectos",
+    "nextProject": "Siguiente proyecto"
+  },
+  "cta": {
+    "title": "Construyamos algo",
+    "email": "Copiar email"
+  },
+  "meta": {
+    "minRead": "min de lectura",
+    "year": "Año",
+    "role": "Rol",
+    "client": "Cliente",
+    "stack": "Stack"
+  },
+  "footer": {
+    "backToTop": "Volver arriba",
+    "madeIn": "Hecho en Ecuador"
+  },
+  "common": {
+    "readMore": "Leer más",
+    "viewProject": "Ver proyecto",
+    "viewCode": "Ver código"
+  }
+}

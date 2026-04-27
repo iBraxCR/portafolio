@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "works": "Works",
+    "about": "About",
+    "insights": "Insights"
+  },
+  "hero": {
+    "role": "Fullstack developer",
+    "location": "based in ecuador"
+  },
+  "works": {
+    "selected": "Selected works",
+    "all": "All projects",
+    "nextProject": "Next project"
+  },
+  "cta": {
+    "title": "Let's build something",
+    "email": "Copy email"
+  },
+  "meta": {
+    "minRead": "min read",
+    "year": "Year",
+    "role": "Role",
+    "client": "Client",
+    "stack": "Stack"
+  },
+  "footer": {
+    "backToTop": "Back to top",
+    "madeIn": "Made in Ecuador"
+  },
+  "common": {
+    "readMore": "Read more",
+    "viewProject": "View project",
+    "viewCode": "View code"
+  }
+}
