@@ -1,0 +1,35 @@
+---
+interface Props {
+  items: (string | number)[];
+  separator?: string;
+  class?: string;
+}
+
+const { items, separator = '—', class: className = '' } = Astro.props;
+const filtered = items.filter((v) => v !== undefined && v !== null && v !== '');
+---
+
+<span class={`meta ${className}`.trim()}>
+  {filtered.map((item, i) => (
+    <>
+      {i > 0 && <span class="sep">{separator}</span>}
+      <span>{item}</span>
+    </>
+  ))}
+</span>
+
+<style>
+  .meta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-muted);
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+  .sep {
+    color: var(--fg-subtle);
+  }
+</style>
