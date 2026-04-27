@@ -26,6 +26,9 @@
     });
     gsap.ticker.lagSmoothing(0);
 
+    // Exponer lenis globalmente para otros componentes (ej: back-to-top)
+    (window as any).__lenis = lenis;
+
     // Animaciones reveal: fade-up en scroll
     gsap.utils.toArray<HTMLElement>('.reveal').forEach((el, i) => {
       gsap.fromTo(

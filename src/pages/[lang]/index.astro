@@ -34,11 +34,7 @@ const featured = allProjects.sort((a, b) => a.data.number - b.data.number);
     <Meta items={[t('hero.location', lang)]} class="location" />
   </section>
 
-  <section class="works reveal">
-    <header class="section-head">
-      <Meta items={['01']} />
-      <h2>{t('works.selected', lang)}</h2>
-    </header>
+  <section class="works">
     <div class="works-grid">
       {featured.map((entry) => {
         const cleanSlug = entry.data.urlSlug.replace(/^(es|en)-/, '');
@@ -90,27 +86,13 @@ const featured = allProjects.sort((a, b) => a.data.number - b.data.number);
   }
 
   .works {
-    padding: 4rem var(--pad-x);
-    max-width: var(--max-w);
-    margin: 0 auto;
     border-top: 1px solid var(--line);
   }
-  .section-head {
-    display: flex;
-    gap: 2rem;
-    align-items: baseline;
-    margin-bottom: 3rem;
-  }
-  .section-head h2 {
-    font-family: var(--font-serif);
-    font-size: var(--fs-h2);
-    font-weight: 400;
-    margin: 0;
-  }
+
   .works-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3rem 2rem;
+    gap: 2px;
   }
 
   @media (max-width: 767px) {
@@ -120,12 +102,13 @@ const featured = allProjects.sort((a, b) => a.data.number - b.data.number);
   }
 
   .works-more {
-    margin-top: 3rem;
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 2.5rem var(--pad-x) 5rem;
     font-family: var(--font-mono);
     font-size: var(--fs-small);
     color: var(--fg-muted);
     border-top: 1px solid var(--line);
-    padding-top: 2rem;
   }
 
   .works-more a {
