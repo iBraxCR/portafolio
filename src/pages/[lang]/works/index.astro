@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { t, locales, isLocale, type Locale } from '../../../lib/i18n';
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: rawLang } = Astro.params;
+if (!isLocale(rawLang)) throw new Error(`Invalid locale: ${rawLang}`);
+const lang: Locale = rawLang;
+---
+
+<BaseLayout
+  title={t('works.all', lang)}
+  description={lang === 'es' ? 'Listado completo de proyectos.' : 'Full projects index.'}
+  lang={lang}
+>
+  <section class="page">
+    <h1>{t('works.all', lang)}</h1>
+    <p>Coming soon.</p>
+  </section>
+</BaseLayout>
+
+<style>
+  .page {
+    padding: 8rem var(--pad-x);
+    max-width: var(--max-w);
+    margin: 0 auto;
+  }
+  .page h1 {
+    font-family: var(--font-serif);
+    font-size: var(--fs-h1);
+    font-weight: 400;
+    margin: 0 0 2rem;
+  }
+  .page p {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+  }
+</style>
