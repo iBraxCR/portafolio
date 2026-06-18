@@ -42,10 +42,12 @@ const links = [
 
   <div class="nav-actions">
     <a href={`/cv/CV_${lang.toUpperCase()}.pdf`} class="nav-btn" download>
-      {t('nav.cv', lang)}
+      <span class="label-full">{t('nav.cv', lang)}</span>
+      <span class="label-short">{t('nav.cvShort', lang)}</span>
     </a>
     <button class="nav-btn nav-btn--accent" data-copy-email="joschuabarahona15@gmail.com">
-      <span data-copy-label>{t('nav.email', lang)}</span>
+      <span class="label-full" data-copy-label>{t('nav.email', lang)}</span>
+      <span class="label-short">{t('nav.emailShort', lang)}</span>
     </button>
     <LangSwitcher current={lang} path={path} />
   </div>
@@ -148,25 +150,59 @@ const links = [
     border-color: var(--accent);
   }
 
+  .label-short {
+    display: none;
+  }
+
   @media (max-width: 767px) {
     .nav {
-      grid-template-columns: 1fr auto;
-      gap: 1rem;
-      padding-block: 16px;
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0;
+      padding: 10px var(--pad-x);
+    }
+
+    .brand {
+      flex-shrink: 0;
+      margin-right: auto;
+    }
+
+    .brand span {
+      display: none;
     }
 
     nav {
-      grid-column: 1 / -1;
-      justify-self: start;
+      flex-shrink: 0;
     }
 
     nav ul {
-      gap: 1rem;
-      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
-    .nav-btn:not(.nav-btn--accent) {
+    nav a {
+      font-size: 0.6rem;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-actions {
+      flex-shrink: 0;
+      gap: 0.3rem;
+      margin-left: 0.5rem;
+    }
+
+    .label-full {
       display: none;
+    }
+
+    .label-short {
+      display: inline;
+    }
+
+    .nav-btn {
+      height: 1.5rem;
+      padding: 0 0.45rem;
+      font-size: 0.6rem;
     }
   }
 </style>

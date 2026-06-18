@@ -143,6 +143,29 @@ const links = locales.map((loc) => ({
     cursor: default;
     pointer-events: none;
   }
+
+  @media (max-width: 767px) {
+    .lang-switcher {
+      height: 26px;
+      padding: 2px;
+      font-size: 0.6rem;
+    }
+
+    .lang-option {
+      width: 28px;
+    }
+
+    .lang-switcher::after {
+      left: 2px;
+      top: 2px;
+      width: 28px;
+      height: calc(100% - 4px);
+    }
+
+    .lang-switcher:has([aria-current="true"]:nth-child(2))::after {
+      translate: 30px 0;
+    }
+  }
 </style>
 
 <script>

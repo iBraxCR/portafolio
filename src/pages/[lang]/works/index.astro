@@ -539,6 +539,7 @@ function rolePreview(entry: (typeof projects)[number]) {
     .hero-head,
     .hero-grid {
       display: grid;
+      grid-template-columns: 1fr;
       gap: 1rem;
     }
 
@@ -549,6 +550,11 @@ function rolePreview(entry: (typeof projects)[number]) {
 
     .hero-meta {
       justify-content: flex-start;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 14vw, 5rem);
+      line-height: 0.92;
     }
 
     .hero-intro {
@@ -577,7 +583,7 @@ function rolePreview(entry: (typeof projects)[number]) {
       grid-column: 1 / -1;
       order: 3;
       margin-top: 0.5rem;
-      max-width: 28rem;
+      max-width: 100%;
     }
   }
 

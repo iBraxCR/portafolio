@@ -4,7 +4,9 @@
     "about": "Sobre mí",
     "insights": "Ideas",
     "cv": "Descargar CV",
-    "email": "Escribir por correo"
+    "cvShort": "CV",
+    "email": "Escribir por correo",
+    "emailShort": "Correo"
   },
   "hero": {
     "role": "Fullstack developer",

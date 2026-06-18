@@ -4,7 +4,9 @@
     "about": "About",
     "insights": "Insights",
     "cv": "Download CV",
-    "email": "Write by email"
+    "cvShort": "CV",
+    "email": "Write by email",
+    "emailShort": "Email"
   },
   "hero": {
     "role": "Fullstack developer",
