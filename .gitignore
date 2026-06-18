@@ -42,6 +42,9 @@ AGENTS.md
 CLAUDE.md
 GEMINI.md
 
+# Internal docs / planning
+docs/
+
 # Misc
 coverage/
 *.tsbuildinfo
