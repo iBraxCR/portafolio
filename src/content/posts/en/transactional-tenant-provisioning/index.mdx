@@ -1,0 +1,92 @@
+---
+title: "Provisioning tenants as a transaction, not a script"
+urlSlug: "en-transactional-tenant-provisioning"
+lang: "en"
+excerpt: "Creating databases, users, licenses and webhooks by hand does not scale. What License Manager taught me about treating SaaS provisioning as a transactional workflow."
+category: "process"
+tags:
+  - "saas"
+  - "provisioning"
+  - "dotnet"
+  - "operations"
+  - "architecture"
+readingTime: 5
+publishedAt: 2025-04-11
+draft: false
+---
+
+Most teams do not notice provisioning as a design problem until they start repeating it enough times.
+
+That happened with **License Manager**, the internal panel I built to provision both Agenda IA and POS Tree Codes. At first the process looked manageable: create a database, import a schema, create credentials, register the license, generate the `.env`, send the client their files. None of those steps was hard on its own. The problem was the gap between them.
+
+The moment a workflow depends on several irreversible actions, "just run the script" stops being a serious operating model.
+
+## The real issue was consistency
+
+Provisioning a tenant is not one action. It is a chain:
+
+1. Create the physical database
+2. Create the database user and permissions
+3. Import or seed the schema
+4. Persist the license record in the central system
+5. Generate credentials and delivery artifacts
+6. Register product-specific values like webhooks, plans or device limits
+
+If step 4 fails after step 3 already succeeded, you do not have a failed request. You have a half-born tenant.
+
+That state is where operational debt starts: databases nobody owns, credentials that should not exist, licenses that do not match reality, support issues that look random because they were created by an inconsistent setup.
+
+## The fix was architectural, not cosmetic
+
+In License Manager I stopped thinking about provisioning as an admin form and started treating it as a **transactional workflow**.
+
+That means every provisioning request has three rules:
+
+1. It must have a clear ordered sequence
+2. Each step must know what it created
+3. If a later step fails, previous steps must be reversible
+
+In practice, that changed the implementation more than the UI.
+
+The operator still fills one form. But internally the system now executes a controlled pipeline where database creation, schema import, credential generation and license persistence are coordinated as one unit of work. If any step fails, rollback runs immediately: drop the database, remove generated records, discard artifacts, and leave the server as if the attempt never happened.
+
+## Product-specific flows matter
+
+One thing I learned quickly: "tenant provisioning" is too abstract to be useful unless you model the product differences.
+
+Agenda IA and POS Tree Codes both create tenants, but not in the same way.
+
+- **Agenda IA** needs a full database, seeded plans, admin bootstrap, tenant index registration and webhook preparation.
+- **POS Tree Codes** needs license generation, device limits, hardware authorization rules and different delivery files.
+
+Trying to unify both flows into one generic provisioning engine would have made the code look elegant and behave poorly.
+
+The better tradeoff was a shared orchestration idea with **separate provisioning services per product**.
+
+## Why rollback is more valuable than speed
+
+Manual provisioning often feels fast because the operator can improvise around failures. But that speed is fake. It pushes recovery cost into later support, debugging and trust loss.
+
+Rollback gives something more important than speed: **predictability**.
+
+The operator can trust that there are only two possible outcomes:
+
+- the tenant is fully ready
+- nothing was created
+
+That binary state is what makes an internal tool reliable.
+
+## A practical rule I keep now
+
+If onboarding a customer creates infrastructure, credentials or irreversible records, it should not live as a loose sequence of scripts forever.
+
+It should become an application concern with:
+
+- explicit orchestration
+- auditable steps
+- rollback paths
+- product-aware rules
+
+Provisioning is part of the product, even when only the internal team sees it.
+
+That was the main shift behind License Manager: it was not an admin panel for forms. It was an attempt to turn operational fragility into a repeatable system.

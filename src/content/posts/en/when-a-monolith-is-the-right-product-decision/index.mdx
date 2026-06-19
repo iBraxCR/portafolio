@@ -1,0 +1,81 @@
+---
+title: "When a monolith is the right product decision"
+urlSlug: "en-when-a-monolith-is-the-right-product-decision"
+lang: "en"
+excerpt: "Aura Pura reminded me that architecture should answer product constraints first. Sometimes one Flask app is the correct move, even if the stack looks less fashionable."
+category: "process"
+tags:
+  - "monolith"
+  - "flask"
+  - "product"
+  - "architecture"
+  - "small-business"
+readingTime: 4
+publishedAt: 2024-10-02
+draft: false
+---
+
+Not every product benefits from being split early.
+
+That sounds obvious, but it is easy to forget when modern web development constantly pushes toward separate frontends, APIs, admin panels, workers and infrastructure layers from day one.
+
+Working on **Aura Pura**, a perfume catalog with a lightweight admin flow, reminded me that architecture has to answer business constraints before it answers trend.
+
+## The product was small, but the requirements were real
+
+Aura Pura needed three things:
+
+1. A public catalog with a refined visual presentation
+2. A way for the owner to manage products without developer intervention
+3. Minimal infrastructure cost and low deployment complexity
+
+Those constraints matter more than the abstract idea of a "modern stack".
+
+The owner did not need an ecosystem of services. She needed a catalog that looked intentional, loaded reliably and could be updated without technical friction.
+
+## Why the monolith was correct
+
+The implementation used Flask to serve both the site and the API consumed by a small Tkinter admin application.
+
+That decision removed several costs immediately:
+
+- no separate frontend deployment
+- no CORS layer to maintain
+- no duplicated auth model
+- no coordination between multiple repos or runtimes
+
+One codebase owned the templates, the endpoints and the business rules. For a small commercial product, that compression was not a compromise. It was an advantage.
+
+## Simplicity is only valid if it stays explicit
+
+Calling something a monolith does not automatically make it simpler. It only becomes simpler if boundaries still exist inside the application.
+
+What made the approach work here was keeping responsibilities legible:
+
+- Jinja templates for the storefront
+- REST endpoints for the admin tool
+- MySQL for persistent data
+- local image handling without external media services
+
+The result was a system that was easy to deploy, easy to reason about and cheap to keep alive.
+
+## The important tradeoff
+
+Could the project have been built with a React frontend, a separate API and cloud storage for assets? Yes.
+
+Would that have made the product better for this client? No.
+
+It would have increased moving parts without increasing business value. That is the distinction I try to keep in mind now: architecture should reduce friction around the real product, not add prestige around the stack.
+
+## A rule I reuse often
+
+If a product has:
+
+- one clear domain
+- a small number of operators
+- modest traffic
+- strong sensitivity to cost and maintenance
+
+then a monolith is not a temporary embarrassment. It can be the right long-term decision.
+
+Aura Pura was useful to me because it reinforced something easy to forget: good architecture is not the most expandable structure on paper. It is the structure that best fits the problem you actually have.

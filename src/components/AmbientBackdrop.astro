@@ -1,0 +1,429 @@
+---
+// no props
+---
+
+<div class="ambient-backdrop" data-ambient-bg aria-hidden="true">
+  <div class="ambient-backdrop__base"></div>
+  <canvas class="ambient-backdrop__noise" data-noise-canvas></canvas>
+  <div class="ambient-backdrop__veil"></div>
+  <div class="ambient-backdrop__glass">
+    <div class="ambient-backdrop__glass-shadow">
+      <div class="ambient-backdrop__glass-panel"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ambient-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: #040404;
+  }
+
+  .ambient-backdrop__base,
+  .ambient-backdrop__noise,
+  .ambient-backdrop__veil,
+  .ambient-backdrop__glass {
+    position: absolute;
+    inset: 0;
+  }
+
+  .ambient-backdrop__base {
+    background:
+      radial-gradient(circle at 18% 20%, rgba(255, 245, 225, 0.08), transparent 22%),
+      radial-gradient(circle at 82% 78%, rgba(255, 196, 122, 0.06), transparent 24%),
+      linear-gradient(180deg, rgba(8, 8, 8, 0.92) 0%, rgba(4, 4, 4, 1) 100%);
+    transform: scale(1.04);
+  }
+
+  .ambient-backdrop__noise {
+    inset: -8%;
+    width: 116%;
+    height: 116%;
+    opacity: 0.64;
+    transform: scale(1.02);
+  }
+
+  .ambient-backdrop[data-noise-ready='true'] .ambient-backdrop__noise {
+    opacity: 0.88;
+  }
+
+  .ambient-backdrop__veil {
+    background:
+      radial-gradient(circle at center, transparent 32%, rgba(4, 4, 4, 0.42) 100%),
+      linear-gradient(180deg, rgba(5, 5, 5, 0.28) 0%, rgba(5, 5, 5, 0.58) 100%);
+  }
+
+  .ambient-backdrop__glass {
+    padding: 0;
+  }
+
+  .ambient-backdrop__glass-shadow {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    filter: none;
+  }
+
+  .ambient-backdrop__glass-shadow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 1px solid rgba(255, 255, 255, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+    z-index: 2;
+  }
+
+  .ambient-backdrop__glass-panel {
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.014) 38%, rgba(255, 255, 255, 0.01) 62%, rgba(255, 255, 255, 0.028) 100%),
+      linear-gradient(180deg, rgba(8, 8, 8, 0.34), rgba(8, 8, 8, 0.2));
+    backdrop-filter: blur(18px) saturate(108%);
+    -webkit-backdrop-filter: blur(18px) saturate(108%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.015);
+  }
+
+  .ambient-backdrop__glass-panel::before,
+  .ambient-backdrop__glass-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  .ambient-backdrop__glass-panel::before {
+    background:
+      linear-gradient(115deg, rgba(255, 255, 255, 0.06), transparent 24%, transparent 58%, rgba(255, 255, 255, 0.016) 100%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18%);
+    opacity: 0.4;
+  }
+
+  .ambient-backdrop__glass-panel::after {
+    background:
+      radial-gradient(circle at 10% 8%, rgba(255, 255, 255, 0.05), transparent 32%),
+      radial-gradient(circle at 85% 86%, rgba(255, 255, 255, 0.025), transparent 28%);
+    opacity: 0.38;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ambient-backdrop__noise {
+      opacity: 0.54;
+    }
+
+    .ambient-backdrop__glass-panel {
+      backdrop-filter: blur(12px) saturate(110%);
+      -webkit-backdrop-filter: blur(12px) saturate(110%);
+    }
+  }
+</style>
+
+<script>
+  const palette = [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0.54, 0.5, 0.45],
+    [0.93, 0.88, 0.8],
+    [0.58, 0.54, 0.48],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ];
+
+  const vertexSource = `#version 300 es
+precision mediump float;
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+}`;
+
+  const fragmentSource = `#version 300 es
+precision mediump float;
+
+out vec4 fragColor;
+
+#define PI 3.14159265358979323846
+
+uniform float width;
+uniform float height;
+uniform float time;
+uniform float scale;
+uniform int pattern;
+uniform vec3 hueTb[15];
+
+vec2 resolution;
+
+vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+
+float snoise(vec3 v){
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+
+  vec3 i = floor(v + dot(v, C.yyy));
+  vec3 x0 = v - i + dot(i, C.xxx);
+
+  vec3 g = step(x0.yzx, x0.xyz);
+  vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy);
+  vec3 i2 = max(g.xyz, l.zxy);
+
+  vec3 x1 = x0 - i1 + C.xxx;
+  vec3 x2 = x0 - i2 + C.xxx * 2.0;
+  vec3 x3 = x0 - 1.0 + C.xxx * 3.0;
+
+  i = mod(i, 289.0);
+  vec4 p = permute(permute(permute(
+             i.z + vec4(0.0, i1.z, i2.z, 1.0))
+           + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+           + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+
+  float n_ = 1.0 / 7.0;
+  vec3 ns = n_ * D.wyz - D.xzx;
+
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+  vec4 x_ = floor(j * ns.z);
+  vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy;
+  vec4 y = y_ * ns.x + ns.yyyy;
+  vec4 h = 1.0 - abs(x) - abs(y);
+
+  vec4 b0 = vec4(x.xy, y.xy);
+  vec4 b1 = vec4(x.zw, y.zw);
+
+  vec4 s0 = floor(b0) * 2.0 + 1.0;
+  vec4 s1 = floor(b1) * 2.0 + 1.0;
+  vec4 sh = -step(h, vec4(0.0));
+
+  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+  vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+
+  vec3 p0 = vec3(a0.xy, h.x);
+  vec3 p1 = vec3(a0.zw, h.y);
+  vec3 p2 = vec3(a1.xy, h.z);
+  vec3 p3 = vec3(a1.zw, h.w);
+
+  vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+  p0 *= norm.x;
+  p1 *= norm.y;
+  p2 *= norm.z;
+  p3 *= norm.w;
+
+  vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
+  m = m * m;
+  return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
+}
+
+void main() {
+  resolution = vec2(width, height);
+  vec2 uv = (gl_FragCoord.xy - resolution * 0.5) / min(resolution.x, resolution.y);
+  float light = (snoise(vec3(uv * scale, time)) + 1.0) * 0.5;
+  light = 15.0 * light;
+  vec3 hue = hueTb[int(floor(light))];
+
+  switch (pattern) {
+    case 0: light = 1.0; break;
+    case 1: light = (1.0 - cos(light * 2.0 * PI)) * 0.5; break;
+    case 2: light = fract(light) < 0.3 ? 1.0 : 0.0; break;
+  }
+
+  fragColor = vec4(light * hue, 1.0);
+}`;
+
+  function initAll() {
+    document.querySelectorAll<HTMLElement>('[data-ambient-bg]').forEach((root) => {
+      if (root.dataset.ready === 'true') return;
+      root.dataset.ready = 'true';
+      initAmbientBackdrop(root);
+    });
+  }
+
+  initAll();
+  document.addEventListener('astro:page-load', initAll);
+
+  function initAmbientBackdrop(root: HTMLElement) {
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-noise-canvas]');
+    if (!canvas) return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let gl: WebGL2RenderingContext | null = null;
+
+    try {
+      gl = canvas.getContext('webgl2', {
+        alpha: true,
+        antialias: false,
+        depth: false,
+        stencil: false,
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: false,
+      });
+    } catch (_error) {
+      gl = null;
+    }
+
+    if (!gl) return;
+
+    try {
+      const program = createProgram(gl, vertexSource, fragmentSource);
+      const positionHandle = getAttribLocation(gl, program, 'position');
+      const widthHandle = getUniformLocation(gl, program, 'width');
+      const heightHandle = getUniformLocation(gl, program, 'height');
+      const timeHandle = getUniformLocation(gl, program, 'time');
+      const scaleHandle = getUniformLocation(gl, program, 'scale');
+      const patternHandle = getUniformLocation(gl, program, 'pattern');
+      const hueTbHandle = getUniformLocation(gl, program, 'hueTb');
+
+      const vertexData = new Float32Array([
+        -1, 1,
+        -1, -1,
+        1, 1,
+        1, -1,
+      ]);
+
+      const vertexBuffer = gl.createBuffer();
+      if (!vertexBuffer) return;
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(positionHandle);
+      gl.vertexAttribPointer(positionHandle, 2, gl.FLOAT, false, 8, 0);
+
+      let animationFrameId = 0;
+      let prevTime = performance.now();
+      let runTime = 0;
+      const noiseScale = 3.28;
+      const noiseSpeed = 0.62;
+
+      root.dataset.noiseReady = 'true';
+
+      gl.useProgram(program);
+      gl.uniform1i(patternHandle, 1);
+      gl.uniform3fv(hueTbHandle, new Float32Array(palette.flat()));
+
+      const resize = () => {
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, prefersReduced ? 1 : 1.35);
+        const width = Math.max(1, Math.floor(window.innerWidth * pixelRatio));
+        const height = Math.max(1, Math.floor(window.innerHeight * pixelRatio));
+
+        canvas.width = width;
+        canvas.height = height;
+        gl.viewport(0, 0, width, height);
+        gl.uniform1f(widthHandle, width);
+        gl.uniform1f(heightHandle, height);
+      };
+
+      const updateScale = () => {
+        gl.uniform1f(scaleHandle, noiseScale);
+      };
+
+      const render = (now: number) => {
+        const delta = Math.min(now - prevTime, 100);
+        prevTime = now;
+
+        updateScale();
+
+        runTime += delta * 0.001 * noiseSpeed;
+        gl.uniform1f(timeHandle, runTime);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        animationFrameId = window.requestAnimationFrame(render);
+      };
+
+      resize();
+      updateScale();
+      gl.uniform1f(timeHandle, prefersReduced ? 0.85 : 0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      if (!prefersReduced) {
+        window.addEventListener('resize', resize, { passive: true });
+        animationFrameId = window.requestAnimationFrame(render);
+      } else {
+        window.addEventListener('resize', resize, { passive: true });
+      }
+
+      window.addEventListener(
+        'pagehide',
+        () => {
+          window.cancelAnimationFrame(animationFrameId);
+        },
+        { once: true }
+      );
+    } catch (_error) {
+      root.dataset.noiseReady = 'false';
+    }
+  }
+
+  function createProgram(gl: WebGL2RenderingContext, vertex: string, fragment: string) {
+    const vertexShader = compileShader(gl, vertex, gl.VERTEX_SHADER);
+    const fragmentShader = compileShader(gl, fragment, gl.FRAGMENT_SHADER);
+    const program = gl.createProgram();
+
+    if (!program) {
+      throw new Error('Program creation failed.');
+    }
+
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(program) || 'Program linking failed.');
+    }
+
+    return program;
+  }
+
+  function compileShader(gl: WebGL2RenderingContext, source: string, type: number) {
+    const shader = gl.createShader(type);
+
+    if (!shader) {
+      throw new Error('Shader creation failed.');
+    }
+
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(shader) || 'Shader compilation failed.');
+    }
+
+    return shader;
+  }
+
+  function getAttribLocation(gl: WebGL2RenderingContext, program: WebGLProgram, name: string) {
+    const location = gl.getAttribLocation(program, name);
+
+    if (location === -1) {
+      throw new Error(`Attribute ${name} not found.`);
+    }
+
+    return location;
+  }
+
+  function getUniformLocation(gl: WebGL2RenderingContext, program: WebGLProgram, name: string) {
+    const location = gl.getUniformLocation(program, name);
+
+    if (location === null) {
+      throw new Error(`Uniform ${name} not found.`);
+    }
+
+    return location;
+  }
+</script>

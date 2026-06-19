@@ -1,0 +1,87 @@
+---
+title: "Desktop updates need trust, not just distribution"
+urlSlug: "en-signed-desktop-updates"
+lang: "en"
+excerpt: "TreeCodes Hub was built around one idea: shipping installers is easy, but shipping updates users can trust requires signatures, lifecycle control and a central source of truth."
+category: "process"
+tags:
+  - "desktop"
+  - "updates"
+  - "java"
+  - "security"
+  - "distribution"
+readingTime: 4
+publishedAt: 2024-08-12
+draft: false
+---
+
+Distributing desktop software looks simple until you need to do it more than once.
+
+The first release can go out by email, cloud drive or direct download link. The second one too. But as soon as you maintain several applications, several clients and several versions, "send them the installer" becomes a weak operational pattern.
+
+That was the reason behind **TreeCodes Hub**.
+
+## The problem is not download, it is authority
+
+Most update systems fail before the technical layer because they do not establish a single source of truth.
+
+When clients receive binaries through different channels, three things happen:
+
+1. Nobody is fully sure which version is current
+2. Modified or stale installers can circulate as if they were official
+3. Support starts debugging environments that should never have existed
+
+The issue is not convenience. It is trust.
+
+## The right question changed the architecture
+
+Instead of asking "how do we send updates?", the better question was:
+
+**How do we guarantee that only recognized applications can be installed and launched inside the ecosystem?**
+
+That leads to a different design.
+
+TreeCodes Hub works as a desktop control point. The client sees which applications belong to their license, which version is installed and whether a new version exists. But the meaningful part is behind that interface: every artifact distributed by the hub is validated before execution.
+
+## Signatures create a boundary
+
+The most important decision was requiring every distributed artifact to carry a digital signature that the client verifies locally.
+
+If the signature does not match the certificate expected by the system:
+
+- installation stops
+- the file is rejected
+- the user sees that the artifact is not recognized
+
+That changes the role of the launcher. It is no longer just an update UI. It becomes a trust boundary between the ecosystem and anything outside it.
+
+## Lifecycle matters as much as binaries
+
+Another lesson: updates are not only files. They are part of a lifecycle.
+
+The system needs to answer:
+
+- what applications this client is allowed to use
+- what version is currently approved
+- what happens when a license expires
+- how an installation is disabled without touching the machine manually
+
+That is why Hub depends on a central API for version metadata and license state. A desktop app alone cannot solve distribution if it has no authoritative backend to tell it what should exist.
+
+## Why this matters for small ecosystems too
+
+It is easy to think this level of control is only necessary for large SaaS companies. I do not think that is true.
+
+The smaller the ecosystem, the more expensive confusion becomes. One bad installer, one unverified binary or one outdated client can create support work that takes longer than building the update flow correctly in the first place.
+
+The practical lesson from TreeCodes Hub is simple:
+
+If your product ships desktop software, updates are not only a packaging problem. They are a trust problem.
+
+And trust needs three things:
+
+- a central source of truth
+- artifact verification
+- explicit lifecycle control
+
+Without those, you are not managing updates. You are only moving files around.

@@ -12,6 +12,11 @@ stack:
     - "Java 21 Swing"
   backend:
     - "Spring Boot"
+showcase:
+  layout: "hub"
+  heroVideo: "/projects/launcher/videoFuncionamiento.mp4"
+  primaryImage: "/projects/launcher/principal.png"
+  secondaryImage: "/projects/launcher/carga.png"
 featured: false
 draft: false
 description: "Desktop launcher for the TreeCodes ecosystem. Manages installations, updates, and licenses with digital signature verification."
@@ -29,3 +34,7 @@ TreeCodes Hub is a Java 21 Swing desktop application that acts as a launcher and
 ## Architecture
 
 Every artifact distributed through the hub carries a digital signature that the client verifies before executing the installation. If the signature does not match the certificate registered on the server, the process is aborted and the user is alerted. This ensures that no modified or unrecognized binary can be installed through the hub under any circumstances. The licensing system validates each subscription's status online: if a license expires or is revoked, the hub reflects that change on the next startup and disables access to the corresponding application without requiring any manual intervention on the client side.
+
+## Outcome
+
+TreeCodes Hub replaced a fragile distribution model — email installers, manual version tracking, no enforcement mechanism — with a controlled software lifecycle. Clients always run a signed, verified version. Updates reach every machine without coordination overhead. License changes take effect automatically without a support call or a visit to the client. The biggest operational shift was going from "did this client update?" being an open question to it being a system-managed guarantee.

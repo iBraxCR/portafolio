@@ -3,13 +3,14 @@ interface Props {
   items: (string | number)[];
   separator?: string;
   class?: string;
+  [key: string]: unknown;
 }
 
-const { items, separator = '—', class: className = '' } = Astro.props;
+const { items, separator = '—', class: className = '', ...rest } = Astro.props;
 const filtered = items.filter((v) => v !== undefined && v !== null && v !== '');
 ---
 
-<span class={`meta ${className}`.trim()}>
+<span class={`meta ${className}`.trim()} {...rest}>
   {filtered.map((item, i) => (
     <>
       {i > 0 && <span class="sep">{separator}</span>}
@@ -22,14 +23,16 @@ const filtered = items.filter((v) => v !== undefined && v !== null && v !== '');
   .meta {
     font-family: var(--font-mono);
     font-size: var(--fs-small);
-    color: var(--fg-muted);
+    color: var(--fg);
     letter-spacing: 0.02em;
     text-transform: lowercase;
     display: inline-flex;
     gap: 0.5rem;
     align-items: baseline;
+    opacity: 0.82;
   }
   .sep {
-    color: var(--fg-subtle);
+    color: var(--accent);
+    opacity: 0.5;
   }
 </style>

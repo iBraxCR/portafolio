@@ -1,6 +1,8 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { t, locales, isLocale, type Locale } from '../../../lib/i18n';
+import Meta from '../../../components/Meta.astro';
+import { locales, isLocale, type Locale } from '../../../lib/i18n';
 
 export function getStaticPaths() {
   return locales.map((lang) => ({ params: { lang } }));
@@ -9,34 +11,384 @@ export function getStaticPaths() {
 const { lang: rawLang } = Astro.params;
 if (!isLocale(rawLang)) throw new Error(`Invalid locale: ${rawLang}`);
 const lang: Locale = rawLang;
+
+const posts = (await getCollection('posts', ({ data }) => data.lang === lang && !data.draft)).sort(
+  (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime()
+);
+
+const copy = {
+  es: {
+    title: 'Ideas',
+    description: 'Notas sobre desarrollo, producto y proceso.',
+    heroLabel: '07 / Ideas',
+    heroHeading: ['Notas sobre', 'producto, código', 'y criterio.'],
+    heroIntro:
+      'Un espacio para escribir sobre frontend, backend, sistemas, decisiones de producto y el tipo de detalle que normalmente no entra en un case study.',
+    countLabel: 'artículos publicados',
+    emptyLabel: 'Aún no hay artículos publicados.',
+    emptyText:
+      'La estructura ya está lista. Aquí van a entrar notas sobre arquitectura, interfaces, automatización, performance y decisiones de implementación.',
+    categoriesLabel: 'Áreas previstas',
+    categories: [
+      {
+        title: 'Frontend',
+        text: 'Interfaces, componentes, motion, jerarquía visual y decisiones de implementación en UI.',
+      },
+      {
+        title: 'Backend',
+        text: 'APIs, persistencia, integraciones, diseño de servicios y tradeoffs de arquitectura.',
+      },
+      {
+        title: 'DevOps',
+        text: 'Despliegue, performance, entornos, automatización y operación en producción.',
+      },
+      {
+        title: 'Process',
+        text: 'Criterio de producto, documentación, decisiones de diseño y cómo sostener calidad al construir.',
+      },
+    ],
+    readLabel: 'Leer artículo',
+  },
+  en: {
+    title: 'Insights',
+    description: 'Notes on development, product and process.',
+    heroLabel: '07 / Insights',
+    heroHeading: ['Notes on', 'product, code', 'and judgment.'],
+    heroIntro:
+      'A place to write about frontend, backend, systems, product decisions and the kind of detail that usually does not fit inside a case study.',
+    countLabel: 'published articles',
+    emptyLabel: 'No published articles yet.',
+    emptyText:
+      'The structure is ready. This space will hold notes on architecture, interfaces, automation, performance and implementation decisions.',
+    categoriesLabel: 'Planned areas',
+    categories: [
+      {
+        title: 'Frontend',
+        text: 'Interfaces, components, motion, visual hierarchy and implementation decisions in UI.',
+      },
+      {
+        title: 'Backend',
+        text: 'APIs, persistence, integrations, service design and architecture tradeoffs.',
+      },
+      {
+        title: 'DevOps',
+        text: 'Deployment, performance, environments, automation and production operations.',
+      },
+      {
+        title: 'Process',
+        text: 'Product judgment, documentation, design decisions and how to sustain quality while building.',
+      },
+    ],
+    readLabel: 'Read article',
+  },
+}[lang];
+
+const locale = lang === 'es' ? 'es-CR' : 'en-US';
+
+const categoryLabels: Record<string, { es: string; en: string }> = {
+  frontend: { es: 'Frontend', en: 'Frontend' },
+  backend: { es: 'Backend', en: 'Backend' },
+  devops: { es: 'DevOps', en: 'DevOps' },
+  process: { es: 'Proceso', en: 'Process' },
+};
+
+function cleanSlug(urlSlug: string) {
+  return urlSlug.replace(/^(es|en)-/, '');
+}
+
+function formatCategory(category: string) {
+  return categoryLabels[category]?.[lang] ?? category;
+}
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+}
 ---
 
-<BaseLayout
-  title={t('nav.insights', lang)}
-  description={lang === 'es' ? 'Artículos sobre desarrollo y proceso.' : 'Articles on development and process.'}
-  lang={lang}
->
-  <section class="page">
-    <h1>{t('nav.insights', lang)}</h1>
-    <p>Coming soon.</p>
+<BaseLayout title={copy.title} description={copy.description} lang={lang}>
+  <section class="hero" data-page-hero>
+    <div class="hero-head">
+      <p class="section-kicker" data-hero-kicker>{copy.heroLabel}</p>
+      <Meta items={[`${posts.length} ${copy.countLabel}`]} class="hero-meta" data-hero-meta />
+    </div>
+
+    <div class="hero-grid">
+      <h1>
+        {copy.heroHeading.map((line, index) => (
+          <span class="line-mask" data-hero-line-mask>
+            <span class:list={['line-text', { 'is-accent': index === copy.heroHeading.length - 1 }]} data-hero-line>
+              {line}
+            </span>
+          </span>
+        ))}
+      </h1>
+      <p class="hero-intro" data-hero-copy>{copy.heroIntro}</p>
+    </div>
+  </section>
+
+  <section class="insights">
+    {posts.length > 0 ? (
+      <div class="insights-list" data-stagger-group>
+        {posts.map((post) => (
+          <a href={`/${lang}/insights/${cleanSlug(post.data.urlSlug)}/`} class="insight-row" data-stagger-item>
+            <div class="insight-main">
+              <Meta
+                items={[
+                  formatCategory(post.data.category),
+                  `${post.data.readingTime} ${lang === 'es' ? 'min' : 'min'}`,
+                  formatDate(post.data.publishedAt),
+                ]}
+              />
+              <h2>{post.data.title}</h2>
+              <p>{post.data.excerpt}</p>
+            </div>
+
+            <span class="insight-cta">{copy.readLabel} →</span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div class="empty-state">
+        <div class="empty-copy" data-reveal="fade-up">
+          <p class="empty-label">{copy.emptyLabel}</p>
+          <p class="empty-text">{copy.emptyText}</p>
+        </div>
+
+        <div class="categories-head">
+          <p class="section-kicker" data-reveal="fade-up">{copy.categoriesLabel}</p>
+        </div>
+
+        <div class="categories-grid" data-stagger-group>
+          {copy.categories.map((item, index) => (
+            <article class="category-card" data-stagger-item>
+              <span class="category-index">{String(index + 1).padStart(2, '0')}</span>
+              <h2>{item.title}</h2>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    )}
   </section>
 </BaseLayout>
 
 <style>
-  .page {
-    padding: 8rem var(--pad-x);
+  .hero,
+  .insights {
     max-width: var(--max-w);
     margin: 0 auto;
+    padding-inline: var(--pad-x);
   }
-  .page h1 {
-    font-family: var(--font-serif);
-    font-size: var(--fs-h1);
-    font-weight: 400;
-    margin: 0 0 2rem;
+
+  .hero {
+    padding-top: 8rem;
+    padding-bottom: 4rem;
   }
-  .page p {
-    color: var(--fg-muted);
+
+  .hero-head,
+  .categories-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .section-kicker,
+  .insight-cta,
+  .category-index {
+    margin: 0;
     font-family: var(--font-mono);
     font-size: var(--fs-small);
+    color: var(--fg-subtle);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .hero-meta {
+    justify-content: flex-end;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+    gap: 4rem;
+    align-items: end;
+    margin-top: 3rem;
+  }
+
+  .hero h1 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(3.6rem, 8.5vw, 8.2rem);
+    font-weight: 400;
+    line-height: 0.88;
+    letter-spacing: -0.05em;
+  }
+
+  .hero h1 span {
+    display: block;
+  }
+
+  .hero .is-accent {
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .hero-intro,
+  .insight-main p,
+  .empty-text,
+  .category-card p {
+    margin: 0;
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+
+  .hero-intro {
+    max-width: 28rem;
+    justify-self: end;
+    font-size: 1.05rem;
+  }
+
+  .insights {
+    padding-top: 2rem;
+    padding-bottom: 6rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .insights-list {
+    border-top: 1px solid var(--line);
+  }
+
+  .insight-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2rem;
+    align-items: start;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--line);
+    color: inherit;
+  }
+
+  .insight-row:hover h2,
+  .insight-row:hover .insight-cta {
+    color: var(--accent);
+  }
+
+  .insight-main {
+    display: grid;
+    gap: 0.85rem;
+    max-width: 48rem;
+  }
+
+  .insight-main h2,
+  .category-card h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+
+  .insight-main h2 {
+    font-size: clamp(1.9rem, 3vw, 2.8rem);
+  }
+
+  .insight-cta {
+    color: var(--fg-muted);
+    white-space: nowrap;
+  }
+
+  .empty-state {
+    display: grid;
+    gap: 3rem;
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+  }
+
+  .empty-copy {
+    max-width: 44rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .empty-label {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .category-card {
+    min-height: 14rem;
+    padding: 1.5rem;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+
+  .category-card h2 {
+    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+  }
+
+  @media (max-width: 959px) {
+    .hero-head,
+    .hero-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .hero-meta {
+      justify-content: flex-start;
+    }
+
+    .hero-intro {
+      justify-self: start;
+      max-width: none;
+    }
+
+    .categories-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .hero {
+      padding-top: 6.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 14vw, 5rem);
+      line-height: 0.92;
+    }
+
+    .insight-row {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .categories-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .category-card {
+      min-height: auto;
+    }
   }
 </style>

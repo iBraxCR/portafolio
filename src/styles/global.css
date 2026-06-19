@@ -28,11 +28,24 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
+  overflow-x: clip;
+  background: #040404;
+}
+
+.site-shell {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+.line-mask,
+.line-text {
+  display: block;
 }
 
 *, *::before, *::after {
@@ -57,15 +70,98 @@ a {
   }
 }
 
-/* Scroll-reveal base state */
-.reveal {
+::view-transition-old(root) {
+  animation: 180ms ease-out both vt-out;
+}
+::view-transition-new(root) {
+  animation: 280ms ease-out both vt-in;
+}
+
+@keyframes vt-out {
+  to { opacity: 0; transform: translate3d(0, -8px, 0); }
+}
+@keyframes vt-in {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+}
+
+html.has-motion body {
+  overflow-x: clip;
+}
+
+html.has-motion [data-reveal],
+html.has-motion [data-stagger-item],
+html.has-motion [data-nav-brand],
+html.has-motion [data-nav-item],
+html.has-motion [data-nav-lang],
+html.has-motion [data-hero-kicker],
+html.has-motion [data-hero-meta],
+html.has-motion [data-hero-copy],
+html.has-motion [data-hero-card],
+html.has-motion [data-hero-title],
+html.has-motion [data-hero-media] {
   opacity: 0;
-  transform: translateY(24px);
+  visibility: hidden;
+}
+
+html.has-motion [data-reveal="fade-up"],
+html.has-motion [data-stagger-item],
+html.has-motion [data-nav-brand],
+html.has-motion [data-nav-item],
+html.has-motion [data-nav-lang],
+html.has-motion [data-hero-kicker],
+html.has-motion [data-hero-meta],
+html.has-motion [data-hero-copy],
+html.has-motion [data-hero-card],
+html.has-motion [data-hero-title] {
+  transform: translate3d(0, 24px, 0);
+}
+
+html.has-motion [data-reveal="fade"] {
+  transform: none;
+}
+
+html.has-motion [data-reveal="scale"],
+html.has-motion [data-hero-media] {
+  transform: scale(0.96);
+  transform-origin: center center;
+}
+
+html.has-motion [data-hero-line-mask] {
+  display: block;
+  overflow: hidden;
+}
+
+html.has-motion [data-hero-line] {
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  will-change: transform, opacity;
+}
+
+html.has-motion [data-parallax] {
+  overflow: hidden;
+}
+
+html.has-motion [data-parallax] > :where(img, picture, video, .parallax-inner) {
+  transform: scale(1.08);
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
+  [data-reveal],
+  [data-stagger-item],
+  [data-nav-brand],
+  [data-nav-item],
+  [data-nav-lang],
+  [data-hero-kicker],
+  [data-hero-meta],
+  [data-hero-copy],
+  [data-hero-card],
+  [data-hero-title],
+  [data-hero-media],
+  [data-hero-line] {
     opacity: 1 !important;
+    visibility: visible !important;
     transform: none !important;
   }
 }

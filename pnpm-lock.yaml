@@ -17,9 +17,15 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: ^5.2.7
         version: 5.2.7
+      '@paper-design/shaders':
+        specifier: ^0.0.76
+        version: 0.0.76
       '@tailwindcss/vite':
         specifier: ^4.2.4
         version: 4.2.4(vite@5.4.21(@types/node@24.12.2)(lightningcss@1.32.0))
+      animejs:
+        specifier: 4.3.0
+        version: 4.3.0
       astro:
         specifier: ^4.16.0
         version: 4.16.19(@types/node@24.12.2)(lightningcss@1.32.0)(rollup@4.60.2)(typescript@5.9.3)
@@ -35,6 +41,9 @@ importers:
       tailwindcss:
         specifier: ^4.2.4
         version: 4.2.4
+      three:
+        specifier: ^0.184.0
+        version: 0.184.0
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.0
@@ -45,6 +54,9 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.2.1
         version: 3.2.1
+      simple-icons:
+        specifier: ^16.18.0
+        version: 16.18.0
       typescript:
         specifier: ^5.6.0
         version: 5.9.3
@@ -660,6 +672,9 @@ packages:
   '@oslojs/encoding@1.1.0':
     resolution: {integrity: sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ==}
 
+  '@paper-design/shaders@0.0.76':
+    resolution: {integrity: sha512-AcNDY4J66YQHUfQYFInkCP7M9VOje0od7wLpOR7LtCmc532opJy6ll+h1W9zBovz8tt9U7OADUmJ/qKEXyOX/A==}
+
   '@rollup/pluginutils@5.3.0':
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
     engines: {node: '>=14.0.0'}
@@ -1025,6 +1040,9 @@ packages:
 
   ajv@8.18.0:
     resolution: {integrity: sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==}
+
+  animejs@4.3.0:
+    resolution: {integrity: sha512-68OxbkOYV/+0h8c45Quv277jPs93TEKM2tq8SxtF7S4ftICcTgG7MNOCRMIE1PlOXcXl/nndPCcgAKBEsYakNg==}
 
   ansi-align@3.0.1:
     resolution: {integrity: sha512-IOfwwBF5iczOjp/WeY4YxyjqAFMQoZufdQWDd19SEExbVLNXqvpzSJ/M7Za4/sCPmQ0+GRquoA7bGcINcxew6w==}
@@ -2093,6 +2111,10 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
+  simple-icons@16.18.0:
+    resolution: {integrity: sha512-5KbjcP456Gm1lrk+rhDuX4zFri+3lRX39IjzXAvoMAO8Ne76WlVlM+Z3kA6jdZ7+QHadgXsf++R7g2jaYVbYig==}
+    engines: {node: '>=0.12.18'}
+
   simple-swizzle@0.2.4:
     resolution: {integrity: sha512-nAu1WFPQSMNr2Zn9PGSZK9AGn4t/y97lEm+MXTtUDwfP0ksAIX4nO+6ruD9Jwut4C49SB1Ws+fbXsm/yScWOHw==}
 
@@ -2164,6 +2186,9 @@ packages:
   tapable@2.3.3:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
+
+  three@0.184.0:
+    resolution: {integrity: sha512-wtTRjG92pM5eUg/KuUnHsqSAlPM296brTOcLgMRqEeylYTh/CdtvKUvCyyCQTzFuStieWxvZb8mVTMvdPyUpxg==}
 
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
@@ -3038,6 +3063,8 @@ snapshots:
 
   '@oslojs/encoding@1.1.0': {}
 
+  '@paper-design/shaders@0.0.76': {}
+
   '@rollup/pluginutils@5.3.0(rollup@4.60.2)':
     dependencies:
       '@types/estree': 1.0.8
@@ -3355,6 +3382,8 @@ snapshots:
       fast-uri: 3.1.0
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
+
+  animejs@4.3.0: {}
 
   ansi-align@3.0.1:
     dependencies:
@@ -4908,6 +4937,8 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
+  simple-icons@16.18.0: {}
+
   simple-swizzle@0.2.4:
     dependencies:
       is-arrayish: 0.3.4
@@ -4974,6 +5005,8 @@ snapshots:
   tailwindcss@4.2.4: {}
 
   tapable@2.3.3: {}
+
+  three@0.184.0: {}
 
   tinyexec@0.3.2: {}
 

@@ -1,8 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import ProjectCard from '../../../components/ProjectCard.astro';
-import { t, locales, isLocale, type Locale } from '../../../lib/i18n';
+import Meta from '../../../components/Meta.astro';
+import { locales, isLocale, type Locale } from '../../../lib/i18n';
 
 export function getStaticPaths() {
   return locales.map((lang) => ({ params: { lang } }));
@@ -19,74 +20,581 @@ const allProjects = await getCollection('projects', ({ data }) =>
   data.lang === lang && !data.draft
 );
 const projects = allProjects.sort((a, b) => a.data.number - b.data.number);
+const categories = new Set(projects.map((entry) => entry.data.category));
+const yearRange = projects.reduce(
+  (acc, entry) => {
+    const year = Number.parseInt(entry.data.year, 10);
+    if (Number.isNaN(year)) return acc;
+    return {
+      min: Math.min(acc.min, year),
+      max: Math.max(acc.max, year),
+    };
+  },
+  { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY }
+);
+
+const copy = {
+  es: {
+    heroLabel: '05 / Trabajos',
+    heroHeading: ['El problema', 'primero.'],
+    heroIntro:
+      'Una vista completa del trabajo: productos SaaS, herramientas internas, plataformas y software resuelto desde concepto, interfaz y ejecución.',
+    leadIn: 'Cada proyecto responde a una necesidad real de operación, claridad o automatización.',
+    rowCta: 'Abrir caso',
+    rowCount: 'proyectos publicados',
+    rowRole: 'Rol',
+    rowStack: 'Stack principal',
+    archiveLabel: 'Archivo completo',
+    archiveCards: [
+      { label: 'Casos', value: String(projects.length).padStart(2, '0') },
+      { label: 'Categorías', value: String(categories.size).padStart(2, '0') },
+      {
+        label: 'Rango',
+        value:
+          Number.isFinite(yearRange.min) && Number.isFinite(yearRange.max)
+            ? `${yearRange.min}—${yearRange.max}`
+            : 'Actual',
+      },
+    ],
+  },
+  en: {
+    heroLabel: '05 / Works',
+    heroHeading: ['Problem', 'first.'],
+    heroIntro:
+      'A full view of the work: SaaS products, internal tools, platforms and software resolved from concept, interface and implementation.',
+    leadIn: 'Each project answers a real need around operations, clarity or automation.',
+    rowCta: 'Open case',
+    rowCount: 'published projects',
+    rowRole: 'Role',
+    rowStack: 'Primary stack',
+    archiveLabel: 'Full archive',
+    archiveCards: [
+      { label: 'Cases', value: String(projects.length).padStart(2, '0') },
+      { label: 'Categories', value: String(categories.size).padStart(2, '0') },
+      {
+        label: 'Range',
+        value:
+          Number.isFinite(yearRange.min) && Number.isFinite(yearRange.max)
+            ? `${yearRange.min}—${yearRange.max}`
+            : 'Current',
+      },
+    ],
+  },
+}[lang];
+
+const categoryLabels: Record<string, { es: string; en: string }> = {
+  'web-app': { es: 'Web app', en: 'Web app' },
+  landing: { es: 'Landing', en: 'Landing' },
+  'brand-web': { es: 'Brand web', en: 'Brand web' },
+  api: { es: 'API', en: 'API' },
+  tool: { es: 'Tool', en: 'Tool' },
+};
+
+function cleanSlug(urlSlug: string) {
+  return urlSlug.replace(/^(es|en)-/, '');
+}
+
+function formatCategory(category: string) {
+  return categoryLabels[category]?.[lang] ?? category.replace('-', ' ');
+}
+
+function stackPreview(entry: (typeof projects)[number]) {
+  return [
+    ...(entry.data.stack.frontend ?? []),
+    ...(entry.data.stack.backend ?? []),
+    ...(entry.data.stack.infra ?? []),
+  ]
+    .slice(0, 4)
+    .join(' · ');
+}
+
+function rolePreview(entry: (typeof projects)[number]) {
+  return entry.data.role.slice(0, 2).join(' · ');
+}
 ---
 
-<BaseLayout title={t('works.all', lang)} description={description} lang={lang}>
-  <section class="page-hero reveal">
-    <p class="page-hero-label">02</p>
-    <h1>{t('works.all', lang)}</h1>
+<BaseLayout title={lang === 'es' ? 'Trabajos' : 'Works'} description={description} lang={lang}>
+  <section class="hero" data-page-hero>
+    <div class="hero-head">
+      <p class="section-kicker" data-hero-kicker>{copy.heroLabel}</p>
+      <Meta items={[`${projects.length} ${copy.rowCount}`, copy.leadIn]} class="hero-meta" data-hero-meta />
+    </div>
+
+    <div class="hero-grid">
+      <h1>
+        {copy.heroHeading.map((line, index) => (
+          <span class="line-mask" data-hero-line-mask>
+            <span class:list={['line-text', { 'is-accent': index === copy.heroHeading.length - 1 }]} data-hero-line>
+              {line}
+            </span>
+          </span>
+        ))}
+      </h1>
+      <p class="hero-intro" data-hero-copy>{copy.heroIntro}</p>
+    </div>
   </section>
 
-  <section class="projects-section">
-    <div class="projects-grid">
-      {projects.map((entry) => {
-        const cleanSlug = entry.data.urlSlug.replace(/^(es|en)-/, '');
-        return (
-          <ProjectCard
-            title={entry.data.title}
-            slug={cleanSlug}
-            lang={lang}
-            number={entry.data.number}
-            year={entry.data.year}
-            category={entry.data.category}
-            cover={entry.data.cover}
-            coverHover={entry.data.coverHover}
-          />
-        );
-      })}
+  <section class="works">
+    <div class="archive-bar" data-stagger-group>
+      <p class="archive-label" data-stagger-item>{copy.archiveLabel}</p>
+      <div class="archive-stats">
+        {copy.archiveCards.map((item) => (
+          <article class="archive-stat" data-stagger-item>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <div class="works-list" data-stagger-group>
+      {projects.map((entry) => (
+        <a href={`/${lang}/works/${cleanSlug(entry.data.urlSlug)}/`} class="work-row" data-stagger-item>
+          <span class="work-number">{String(entry.data.number).padStart(2, '0')}</span>
+
+          <div class="work-main">
+            <Meta items={[formatCategory(entry.data.category), entry.data.year]} />
+            <h2>{entry.data.title}</h2>
+            <p>{entry.data.description}</p>
+            <div class="work-notes">
+              <span class="work-note">
+                <em>{copy.rowRole}</em>
+                <strong>{rolePreview(entry)}</strong>
+              </span>
+              <span class="work-note">
+                <em>{copy.rowStack}</em>
+                <strong>{stackPreview(entry)}</strong>
+              </span>
+            </div>
+          </div>
+
+          <div class="work-side">
+            <span class="work-cta">{copy.rowCta} →</span>
+          </div>
+
+          <div class="work-thumb" aria-hidden="true" data-parallax="7">
+            {cleanSlug(entry.data.urlSlug) === 'treecodes-hub' && entry.data.showcase?.primaryImage ? (
+              <div class="work-thumb-custom work-thumb-hub">
+                <img src={entry.data.showcase.primaryImage} alt="" loading="lazy" />
+              </div>
+            ) : entry.data.cover ? (
+              <Image
+                src={entry.data.cover}
+                alt=""
+                widths={[320, 480, 720]}
+                sizes="(max-width: 959px) 100vw, 22vw"
+              />
+            ) : (
+              <div class="thumb-placeholder" />
+            )}
+          </div>
+        </a>
+      ))}
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .page-hero {
-    padding: 8rem var(--pad-x) 4rem;
+  .hero,
+  .works {
     max-width: var(--max-w);
     margin: 0 auto;
+    padding-inline: var(--pad-x);
   }
 
-  .page-hero-label {
+  .hero {
+    padding-top: 8rem;
+    padding-bottom: 4rem;
+  }
+
+  .hero-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .section-kicker,
+  .work-number,
+  .work-cta {
+    margin: 0;
     font-family: var(--font-mono);
     font-size: var(--fs-small);
     color: var(--fg-subtle);
-    margin: 0 0 1.5rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
-  .page-hero h1 {
-    font-family: var(--font-serif);
-    font-size: var(--fs-h1);
-    font-weight: 400;
+  .hero-meta {
+    justify-content: flex-end;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+    gap: 4rem;
+    align-items: end;
+    margin-top: 3rem;
+  }
+
+  .hero h1 {
     margin: 0;
-    letter-spacing: -0.02em;
+    font-family: var(--font-serif);
+    font-size: clamp(3.6rem, 8.5vw, 8.6rem);
+    font-weight: 400;
+    line-height: 0.88;
+    letter-spacing: -0.05em;
   }
 
-  .projects-section {
-    padding: 0 var(--pad-x) 8rem;
-    max-width: var(--max-w);
-    margin: 0 auto;
+  .hero h1 span {
+    display: block;
+  }
+
+  .hero .is-accent {
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .hero-intro,
+  .work-main p {
+    margin: 0;
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+
+  .hero-intro {
+    max-width: 28rem;
+    justify-self: end;
+    font-size: 1.05rem;
+  }
+
+  .works {
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    padding-bottom: 6rem;
+  }
+
+  .archive-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+    gap: 1px;
+    margin-bottom: 2rem;
+    background: var(--line);
+  }
+
+  .archive-label,
+  .archive-stat span,
+  .work-note em {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-subtle);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-style: normal;
+  }
+
+  .archive-label,
+  .archive-stat {
+    background: rgba(10, 10, 10, 0.48);
+    backdrop-filter: blur(18px);
+    position: relative;
+  }
+
+  .archive-label::after,
+  .archive-stat::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0.85;
+  }
+
+  .archive-label {
+    display: flex;
+    align-items: center;
+    padding: 1.15rem 1.25rem;
+  }
+
+  .archive-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .archive-stat {
+    display: grid;
+    gap: 0.45rem;
+    padding: 1.15rem 1.25rem;
+  }
+
+  .archive-stat strong {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+
+  .works-list {
     border-top: 1px solid var(--line);
   }
 
-  .projects-grid {
+  .work-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem 2rem;
-    padding-top: 4rem;
+    grid-template-columns: auto minmax(0, 1fr) auto minmax(14rem, 22vw);
+    gap: 1.5rem 2rem;
+    align-items: center;
+    padding: 1.4rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    color: inherit;
+    background: rgba(10, 10, 10, 0.22);
+    position: relative;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out);
   }
 
-  @media (max-width: 767px) {
-    .projects-grid {
+  .work-row:hover {
+    color: var(--accent);
+    background: rgba(16, 16, 16, 0.5);
+    transform: translateY(-1px);
+  }
+
+  .work-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 1rem;
+    bottom: 1rem;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(239, 226, 200, 0.7), transparent);
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .work-row:hover::before {
+    opacity: 1;
+  }
+
+  .works-list:hover .work-row:not(:hover) {
+    opacity: 0.52;
+  }
+
+  .work-main {
+    display: grid;
+    gap: 0.9rem;
+    max-width: 44rem;
+  }
+
+  .work-main p {
+    max-width: 54ch;
+    font-size: 0.98rem;
+  }
+
+  .work-main h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(1.9rem, 3.4vw, 3rem);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+
+  .work-row:hover .work-main h2 {
+    color: var(--accent);
+  }
+
+  .work-notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem 1.25rem;
+    margin-top: 0.2rem;
+  }
+
+  .work-note {
+    display: grid;
+    gap: 0.35rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .work-note strong {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--fg-muted);
+    line-height: 1.65;
+    letter-spacing: 0.035em;
+  }
+
+  .work-side {
+    align-self: stretch;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .work-cta {
+    color: var(--fg-muted);
+    white-space: nowrap;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .work-row:hover .work-cta {
+    transform: translateX(0.25rem);
+  }
+
+  .work-thumb {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--bg-elev);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 1.25rem 2.5rem rgba(0, 0, 0, 0.16);
+  }
+
+  .work-thumb :global(img),
+  .work-thumb-custom img,
+  .thumb-placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  .work-thumb :global(img),
+  .work-thumb-custom img {
+    display: block;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-out);
+    filter: saturate(0.94) contrast(1.02);
+  }
+
+  .work-thumb::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%, rgba(0, 0, 0, 0.18) 100%),
+      linear-gradient(135deg, rgba(239, 226, 200, 0.08), transparent 45%),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .work-thumb::after {
+    content: '';
+    position: absolute;
+    inset: 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.75;
+  }
+
+  .work-thumb :global(img)::selection {
+    background: transparent;
+  }
+
+  .work-thumb > :global(img),
+  .work-thumb-custom,
+  .thumb-placeholder {
+    filter: saturate(0.94) contrast(1.02);
+  }
+
+  .work-row:hover .work-thumb :global(img),
+  .work-row:hover .work-thumb-custom img {
+    transform: scale(1.045);
+  }
+
+  .work-thumb-custom {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background:
+      radial-gradient(circle at 50% 18%, rgba(239, 226, 200, 0.08), transparent 42%),
+      linear-gradient(180deg, rgba(12, 12, 13, 0.92), rgba(7, 7, 8, 0.98));
+    overflow: hidden;
+  }
+
+  .work-thumb-hub img {
+    object-fit: contain;
+    padding: 0.8rem;
+    background: transparent;
+  }
+
+  .thumb-placeholder {
+    background: linear-gradient(135deg, var(--bg-elev), var(--bg));
+  }
+
+  @media (max-width: 959px) {
+    .hero-head,
+    .hero-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .archive-bar,
+    .archive-stats {
       grid-template-columns: 1fr;
+    }
+
+    .hero-meta {
+      justify-content: flex-start;
+    }
+
+    .hero-intro {
+      justify-self: start;
+      max-width: none;
+    }
+
+    .work-row {
+      grid-template-columns: auto 1fr;
+      align-items: start;
+    }
+
+    .work-notes {
+      grid-template-columns: 1fr;
+    }
+
+    .work-side {
+      align-self: auto;
+    }
+
+    .work-cta {
+      order: 4;
+    }
+
+    .work-thumb {
+      grid-column: 1 / -1;
+      order: 3;
+      margin-top: 0.5rem;
+      max-width: 28rem;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .hero {
+      padding-top: 6.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 14vw, 5rem);
+      line-height: 0.92;
+    }
+
+    .work-row {
+      gap: 1rem;
+      padding-inline: 0;
+      background: transparent;
     }
   }
 </style>

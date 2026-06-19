@@ -1,5 +1,6 @@
 ---
 import { t, type Locale } from '../lib/i18n';
+import SystemMark from './SystemMark.astro';
 
 interface Props {
   lang: Locale;
@@ -7,66 +8,333 @@ interface Props {
 
 const { lang } = Astro.props;
 const year = new Date().getFullYear();
+const copy = {
+  es: {
+    label: '/ Contacto',
+    availability: 'Disponiblidad inmediata para nuevos proyectos. Busco colaboraciones a largo plazo, donde pueda aportar desde la fase de ideación hasta la ejecución final.',
+    location: 'Costa Rica — remoto / colaboraciones internacionales',
+    github: 'GitHub',
+    email: 'Correo',
+    linkedin: 'LinkedIn',
+  },
+  en: {
+    label: '/ Contact',
+    availability: 'Immediate availability for new projects. I am looking for long-term collaborations where I can contribute from the ideation phase to the final execution.',
+    location: 'Costa Rica — remote / international collaborations',
+    github: 'GitHub',
+    email: 'Email',
+    linkedin: 'LinkedIn',
+  },
+}[lang];
 ---
 
 <footer class="footer">
-  <div class="cta">
-    <h2>{t('cta.title', lang)}</h2>
-    <a href="mailto:hola@joschua.dev" class="email">hola@joschua.dev</a>
+  <div class="footer-head" data-stagger-group>
+    <p class="footer-kicker" data-stagger-item>{copy.label}</p>
+    <p class="footer-availability" data-stagger-item>{copy.availability}</p>
   </div>
 
-  <div class="meta">
-    <span>© {year} Joschua Barahona</span>
+  <div class="cta" data-stagger-group>
+    <a href="mailto:joschuabarahona15@gmail.com" class="email" data-stagger-item>joschuabarahona15@gmail.com</a>
+    <p class="footer-location" data-stagger-item>{copy.location}</p>
+  </div>
+
+  <div class="footer-social-bar" data-reveal="fade-up">
     <ul class="socials">
-      <li><a href="https://github.com/joschua" target="_blank" rel="noopener">GitHub</a></li>
-      <li><a href="https://linkedin.com/in/joschua" target="_blank" rel="noopener">LinkedIn</a></li>
+      <li>
+        <a href="https://github.com/iBraxCR" target="_blank" rel="noopener" aria-label={copy.github}>
+          <span class="social-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M12 1.5A10.5 10.5 0 0 0 8.68 22c.53.1.72-.23.72-.5v-1.78c-2.95.64-3.57-1.25-3.57-1.25-.48-1.2-1.16-1.52-1.16-1.52-.95-.64.07-.63.07-.63 1.05.08 1.6 1.08 1.6 1.08.93 1.6 2.45 1.14 3.05.88.09-.68.36-1.14.65-1.4-2.36-.27-4.84-1.18-4.84-5.26 0-1.16.41-2.1 1.08-2.84-.1-.27-.47-1.36.1-2.83 0 0 .89-.28 2.9 1.08a10.1 10.1 0 0 1 5.28 0c2.01-1.36 2.9-1.08 2.9-1.08.57 1.47.2 2.56.1 2.83.68.74 1.08 1.68 1.08 2.84 0 4.1-2.49 4.98-4.87 5.25.37.32.7.96.7 1.94v2.88c0 .28.19.61.73.5A10.5 10.5 0 0 0 12 1.5Z" fill="currentColor"/>
+            </svg>
+          </span>
+          <span>{copy.github}</span>
+        </a>
+      </li>
+      <li>
+        <a href="mailto:joschuabarahona15@gmail.com" aria-label={copy.email}>
+          <span class="social-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M3 5.25h18a1.5 1.5 0 0 1 1.5 1.5v10.5a1.5 1.5 0 0 1-1.5 1.5H3a1.5 1.5 0 0 1-1.5-1.5V6.75A1.5 1.5 0 0 1 3 5.25Zm0 1.5v.2l9 6.3 9-6.3v-.2H3Zm18 10.5v-8.18l-8.57 6a.75.75 0 0 1-.86 0L3 9.07v8.18h18Z" fill="currentColor"/>
+            </svg>
+          </span>
+          <span>{copy.email}</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://linkedin.com/in/joschua" target="_blank" rel="noopener" aria-label={copy.linkedin}>
+          <span class="social-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M6.94 8.06a1.44 1.44 0 1 1 0-2.88 1.44 1.44 0 0 1 0 2.88ZM5.5 9.5h2.88v9H5.5v-9Zm4.69 0h2.76v1.23h.04c.38-.73 1.33-1.5 2.73-1.5 2.92 0 3.46 1.92 3.46 4.42v4.85H16.3v-4.3c0-1.02-.02-2.34-1.43-2.34-1.43 0-1.65 1.12-1.65 2.27v4.37H10.2v-9Z" fill="currentColor"/>
+            </svg>
+          </span>
+          <span>{copy.linkedin}</span>
+        </a>
+      </li>
     </ul>
-    <span>{t('footer.madeIn', lang)}</span>
+  </div>
+
+  <div class="meta" data-reveal="fade-up">
+    <span>© {year} Joschua Barahona</span>
+    <span class="footer-origin">
+      <SystemMark compact class="footer-mark" label="Sou" />
+      <span class="flag-cr" aria-hidden="true"></span>
+      <span>{t('footer.madeIn', lang)}</span>
+    </span>
   </div>
 </footer>
 
 <style>
   .footer {
-    padding: 8rem var(--pad-x) 3rem;
+    padding: 6rem var(--pad-x) 3rem;
     border-top: 1px solid var(--line);
     margin-top: 8rem;
+    max-width: var(--max-w);
+    margin-inline: auto;
   }
-  .cta {
-    margin-bottom: 6rem;
+
+  .footer-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 3rem;
   }
-  .cta h2 {
-    font-family: var(--font-serif);
-    font-size: var(--fs-h1);
-    font-weight: 400;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    margin: 0 0 1.5rem;
-  }
-  .email {
+
+  .footer-kicker,
+  .meta {
     font-family: var(--font-mono);
     font-size: var(--fs-small);
-    color: var(--fg-muted);
-    border-bottom: 1px solid currentColor;
-    padding-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
-  .email:hover { color: var(--fg); }
+
+  .footer-kicker {
+    margin: 0;
+    color: var(--accent);
+    opacity: 0.8;
+  }
+
+  .footer-availability,
+  .footer-location {
+    margin: 0;
+    color: var(--fg);
+    opacity: 0.78;
+    line-height: 1.6;
+  }
+
+  .footer-availability {
+    max-width: 26rem;
+    text-align: right;
+  }
+
+  .cta {
+    margin-bottom: 4rem;
+  }
+
+  .footer-social-bar {
+    margin-bottom: 2rem;
+  }
+
+  .email {
+    display: inline-block;
+    font-family: var(--font-serif);
+    font-size: clamp(2.8rem, 8vw, 6rem);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 1rem;
+    color: var(--fg);
+  }
+
+  .email:hover {
+    color: var(--accent);
+  }
 
   .meta {
     display: flex;
     justify-content: space-between;
     gap: 2rem;
     flex-wrap: wrap;
-    font-family: var(--font-mono);
-    font-size: var(--fs-small);
-    color: var(--fg-muted);
-    text-transform: lowercase;
+    color: var(--fg);
+    opacity: 0.7;
   }
+
   .socials {
     display: flex;
-    gap: 1.5rem;
+    gap: 0.8rem;
     list-style: none;
     padding: 0;
     margin: 0;
+    flex-wrap: wrap;
   }
-  .socials a:hover { color: var(--fg); }
+
+  .socials a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.2rem;
+    padding: 0.45rem 0.72rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.025);
+    backdrop-filter: blur(12px);
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .social-icon {
+    width: 1.7rem;
+    height: 1.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(239, 226, 200, 0.12);
+    border: 1px solid rgba(239, 226, 200, 0.18);
+    color: var(--accent);
+    flex: 0 0 auto;
+  }
+
+  .socials a svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex: 0 0 auto;
+    display: block;
+    opacity: 1;
+  }
+
+  .socials a:hover {
+    color: var(--fg);
+    opacity: 1;
+    border-color: rgba(239, 226, 200, 0.3);
+    background: rgba(239, 226, 200, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .socials a:hover .social-icon {
+    color: var(--fg);
+    background: rgba(239, 226, 200, 0.18);
+    border-color: rgba(239, 226, 200, 0.26);
+  }
+
+  .footer-origin {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .footer-origin :global(.footer-mark) {
+    margin-right: 0.1rem;
+  }
+
+  .flag-cr {
+    position: relative;
+    display: block;
+    width: 1.65rem;
+    height: 1.05rem;
+    border-radius: 0.16rem;
+    background:
+      linear-gradient(
+        180deg,
+        #143d8d 0 17%,
+        #ffffff 17% 33%,
+        #b3262d 33% 67%,
+        #ffffff 67% 83%,
+        #143d8d 83% 100%
+      );
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.14),
+      0 0.2rem 0.45rem rgba(0, 0, 0, 0.18);
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    animation: wave-flag 1.9s cubic-bezier(0.45, 0.05, 0.3, 0.95) infinite;
+    overflow: hidden;
+  }
+
+  .flag-cr::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.26), transparent 28%, rgba(0, 0, 0, 0.2) 100%),
+      repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 0 0.16rem,
+        transparent 0.16rem 0.38rem
+      );
+    opacity: 0.92;
+    animation: flag-shimmer 1.9s ease-in-out infinite;
+  }
+
+  .flag-cr::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -0.08rem;
+    width: 0.08rem;
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 0.2rem rgba(255, 255, 255, 0.12);
+  }
+
+  @keyframes wave-flag {
+    0% {
+      transform: perspective(120px) rotateY(0deg) rotateX(0deg) skewY(0deg) scaleY(1);
+      border-radius: 0.16rem;
+    }
+    18% {
+      transform: perspective(120px) rotateY(-16deg) rotateX(3deg) skewY(2deg) translateY(-1px) scaleY(1.01);
+      border-radius: 0.18rem 0.28rem 0.18rem 0.12rem;
+    }
+    42% {
+      transform: perspective(120px) rotateY(9deg) rotateX(-2deg) skewY(-1.7deg) translateY(0) scaleY(0.99);
+      border-radius: 0.12rem 0.26rem 0.18rem 0.15rem;
+    }
+    68% {
+      transform: perspective(120px) rotateY(-13deg) rotateX(2deg) skewY(1.3deg) translateY(-1px) scaleY(1.01);
+      border-radius: 0.18rem 0.24rem 0.22rem 0.14rem;
+    }
+    100% {
+      transform: perspective(120px) rotateY(0deg) rotateX(0deg) skewY(0deg) scaleY(1);
+      border-radius: 0.16rem;
+    }
+  }
+
+  @keyframes flag-shimmer {
+    0%,
+    100% {
+      transform: translateX(0) scaleX(1);
+      opacity: 0.86;
+    }
+    50% {
+      transform: translateX(0.08rem) scaleX(1.04);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .footer-head {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .footer-availability {
+      text-align: left;
+    }
+
+    .email {
+      font-size: clamp(2.4rem, 14vw, 4rem);
+    }
+
+    .socials {
+      width: 100%;
+    }
+
+    .meta {
+      display: grid;
+      gap: 1rem;
+    }
+  }
 </style>

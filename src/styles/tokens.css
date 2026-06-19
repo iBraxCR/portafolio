@@ -1,12 +1,12 @@
 :root {
   /* Color - dark editorial */
   --bg:        #0A0A0A;
-  --bg-elev:   #141414;
-  --fg:        #EDEDED;
-  --fg-muted:  #8A8A8A;
-  --fg-subtle: #4A4A4A;
-  --accent:    #E8E3D8;
-  --line:      rgba(255, 255, 255, 0.08);
+  --bg-elev:   #161616;
+  --fg:        #F5F1E9;
+  --fg-muted:  #CEC7BB;
+  --fg-subtle: #9A9388;
+  --accent:    #EFE2C8;
+  --line:      rgba(255, 255, 255, 0.14);
 
   /* Typography scale - fluid */
   --fs-display: clamp(3.5rem, 8vw, 9rem);

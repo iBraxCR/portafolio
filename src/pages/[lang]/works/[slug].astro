@@ -2,6 +2,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Meta from '../../../components/Meta.astro';
 import { t, isLocale, type Locale } from '../../../lib/i18n';
 
 export async function getStaticPaths() {
@@ -30,7 +31,6 @@ const lang: Locale = rawLang;
 
 const { Content } = await entry.render();
 
-// Next project logic
 const allInLang = await getCollection('projects', ({ data }) =>
   data.lang === lang && !data.draft
 );
@@ -38,224 +38,1861 @@ allInLang.sort((a, b) => a.data.number - b.data.number);
 const currentIdx = allInLang.findIndex((p) => p.data.urlSlug === entry.data.urlSlug);
 const nextEntry = allInLang[(currentIdx + 1) % allInLang.length];
 const nextSlug = nextEntry.data.urlSlug.replace(/^(es|en)-/, '');
+
+const copy = {
+  es: {
+    heroLabel: '05 / Caso',
+    overviewLabel: 'Resumen',
+    stackLabel: 'Stack',
+    linksLabel: 'Enlaces',
+    galleryLabel: 'Galería',
+    nextLabel: 'Siguiente proyecto',
+    liveLabel: 'Ver proyecto',
+    repoLabel: 'Ver código',
+    dashboardLabel: 'Panel operativo',
+    phoneLabel: 'WhatsApp en vivo',
+    calendarLabel: 'Calendario sincronizado',
+    phoneIntroTitle: 'Interfaz conversacional, no app nueva',
+    phoneIntroCopy:
+      'La reserva sucede dentro de WhatsApp. El teléfono aquí funciona como prueba de producto: el cliente escribe natural, el sistema entiende, valida y responde sin sacarlo del canal.',
+    posHeroLabel: 'Suite híbrida',
+    posHeroTitle: 'Caja principal, interfaz operativa y reportes en un solo sistema.',
+    posHeroCopy:
+      'POS Tree Codes unifica la operación de caja, la lectura del negocio y la capa fiscal en una experiencia pensada para uso real, no para demo genérica.',
+    posInterfaceLabel: 'Interfaz operativa',
+    posPrimaryLabel: 'Cliente de escritorio',
+    posSecondaryLabel: 'Reportes ejecutivos',
+    posTertiaryLabel: 'Operación fiscal',
+    hubHeroLabel: 'Launcher seguro',
+    hubHeroTitle: 'Instalación, actualización y control desde un solo punto.',
+    hubHeroCopy:
+      'TreeCodes Hub concentra el ciclo de vida del software desktop del ecosistema: qué puede usar el cliente, qué versión está aprobada y cuándo debe bloquearse el acceso.',
+    hubPrimaryLabel: 'Panel principal',
+    hubSecondaryLabel: 'Pantalla de carga',
+    auraHeroLabel: 'Catálogo de marca',
+    auraHeroTitle: 'Producto, atmósfera y compra desde una sola pieza visual.',
+    auraHeroCopy:
+      'Aura Pura necesitaba una presencia digital que vendiera por sensibilidad visual antes que por complejidad técnica: catálogo, detalle de fragancias y administración simple para el negocio.',
+    auraPrimaryLabel: 'Vista principal',
+    auraSecondaryLabel: 'Producto destacado',
+    auraModalLabel: 'Detalle modal',
+    auraVideoLabel: 'Funcionamiento',
+    licenseHeroLabel: 'Panel de operaciones',
+    licenseHeroTitle: 'Licencias, tenants y dispositivos desde un solo sistema.',
+    licenseHeroCopy:
+      'License Manager centraliza el ciclo de vida de cada cliente: provisioning multi-tenant, autorización de hardware y auditoría completa de accesos, todo bajo seguridad por capas.',
+    licensePrimaryLabel: 'Crear licencia',
+    licenseSecondaryLabel: 'Detalle de licencia',
+    licenseTertiaryLabel: 'Planes',
+  },
+  en: {
+    heroLabel: '05 / Case',
+    overviewLabel: 'Overview',
+    stackLabel: 'Stack',
+    linksLabel: 'Links',
+    galleryLabel: 'Gallery',
+    nextLabel: 'Next project',
+    liveLabel: 'View project',
+    repoLabel: 'View code',
+    dashboardLabel: 'Operational dashboard',
+    phoneLabel: 'Live WhatsApp flow',
+    calendarLabel: 'Synchronized calendar',
+    phoneIntroTitle: 'Conversational interface, not a new app',
+    phoneIntroCopy:
+      'Booking happens inside WhatsApp. The phone here acts as product proof: the customer writes naturally, the system understands, validates, and replies without moving them to another channel.',
+    posHeroLabel: 'Hybrid suite',
+    posHeroTitle: 'Main checkout, operational interface, and reporting in one system.',
+    posHeroCopy:
+      'POS Tree Codes combines checkout operations, business visibility, and the tax layer into an experience designed for real usage, not a generic product demo.',
+    posInterfaceLabel: 'Operational interface',
+    posPrimaryLabel: 'Desktop client',
+    posSecondaryLabel: 'Executive reports',
+    posTertiaryLabel: 'Tax operation',
+    hubHeroLabel: 'Secure launcher',
+    hubHeroTitle: 'Installation, updates, and control from a single point.',
+    hubHeroCopy:
+      'TreeCodes Hub centralizes the lifecycle of desktop software across the ecosystem: what the client can use, which version is approved, and when access must be disabled.',
+    hubPrimaryLabel: 'Main panel',
+    hubSecondaryLabel: 'Loading screen',
+    auraHeroLabel: 'Brand catalog',
+    auraHeroTitle: 'Product, atmosphere, and purchase in one visual system.',
+    auraHeroCopy:
+      'Aura Pura needed a digital presence that sold through visual sensitivity before technical complexity: catalog, fragrance detail, and simple administration for the business.',
+    auraPrimaryLabel: 'Main view',
+    auraSecondaryLabel: 'Featured product',
+    auraModalLabel: 'Detail modal',
+    auraVideoLabel: 'Flow',
+    licenseHeroLabel: 'Operations panel',
+    licenseHeroTitle: 'Licenses, tenants, and devices from a single system.',
+    licenseHeroCopy:
+      'License Manager centralizes each client lifecycle: multi-tenant provisioning, hardware authorization, and full access auditing — all under layered security.',
+    licensePrimaryLabel: 'Create license',
+    licenseSecondaryLabel: 'License detail',
+    licenseTertiaryLabel: 'Plans',
+  },
+}[lang];
+
+const categoryLabels: Record<string, { es: string; en: string }> = {
+  'web-app': { es: 'Web app', en: 'Web app' },
+  landing: { es: 'Landing', en: 'Landing' },
+  'brand-web': { es: 'Brand web', en: 'Brand web' },
+  api: { es: 'API', en: 'API' },
+  tool: { es: 'Tool', en: 'Tool' },
+};
+
+function formatCategory(category: string) {
+  return categoryLabels[category]?.[lang] ?? category.replace('-', ' ');
+}
+
+const stackGroups = [
+  { label: 'Frontend', items: entry.data.stack.frontend ?? [] },
+  { label: 'Backend', items: entry.data.stack.backend ?? [] },
+  { label: 'Infra', items: entry.data.stack.infra ?? [] },
+].filter((group) => group.items.length > 0);
+const heroStats = [
+  { label: t('meta.year', lang), value: entry.data.year },
+  { label: t('meta.role', lang), value: entry.data.role.slice(0, 2).join(' · ') },
+  { label: copy.stackLabel, value: stackGroups.map((group) => group.label).join(' · ') },
+];
+const showcase = entry.data.showcase;
+const showcaseLayout = showcase?.layout ?? (showcase?.phoneVideo ? 'agenda' : showcase?.heroVideo ? 'pos' : undefined);
+const isAgendaShowcase = showcaseLayout === 'agenda';
+const isPosShowcase = showcaseLayout === 'pos';
+const isHubShowcase = showcaseLayout === 'hub';
+const isAuraShowcase = showcaseLayout === 'aura';
+const isLicenseShowcase = showcaseLayout === 'license';
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.description} lang={lang}>
+  <section class="hero" data-page-hero>
+    <div class="hero-head">
+      <p class="section-kicker" data-hero-kicker>{copy.heroLabel}</p>
+      <Meta
+        items={[
+          String(entry.data.number).padStart(2, '0'),
+          formatCategory(entry.data.category),
+          entry.data.year,
+        ]}
+        class="hero-meta"
+        data-hero-meta
+      />
+    </div>
 
-  <!-- HERO IMAGE (full width) -->
-  <section class="project-hero reveal">
-    {entry.data.cover ? (
-      <div class="hero-image">
-        <Image src={entry.data.cover} alt={entry.data.title} />
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <h1 data-hero-title>{entry.data.title}</h1>
+        <p class="hero-description" data-hero-copy>{entry.data.description}</p>
+
+        <div class="hero-links" data-hero-copy>
+          {entry.data.url && (
+            <a href={entry.data.url} target="_blank" rel="noopener" class="hero-link is-primary">
+              {copy.liveLabel}
+            </a>
+          )}
+          {entry.data.repo && (
+            <a href={entry.data.repo} target="_blank" rel="noopener" class="hero-link">
+              {copy.repoLabel}
+            </a>
+          )}
+        </div>
+
+        <div class="hero-strip" data-hero-copy>
+          {heroStats.map((item) => (
+            <div class="hero-strip-item">
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <aside class="hero-facts" data-hero-card>
+        <div class="fact-card">
+          <span class="fact-label">{copy.overviewLabel}</span>
+          <div class="fact-group">
+            <p>{t('meta.year', lang)}</p>
+            <span>{entry.data.year}</span>
+          </div>
+          <div class="fact-group">
+            <p>{t('meta.role', lang)}</p>
+            <span>{entry.data.role.join(' · ')}</span>
+          </div>
+          {entry.data.client && (
+            <div class="fact-group">
+              <p>{t('meta.client', lang)}</p>
+              <span>{entry.data.client}</span>
+            </div>
+          )}
+        </div>
+
+        <div class="fact-card">
+          <span class="fact-label">{copy.stackLabel}</span>
+          <div class="stack-groups">
+            {stackGroups.map((group) => (
+              <div class="fact-group">
+                <p>{group.label}</p>
+                <span>{group.items.join(' · ')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {(entry.data.url || entry.data.repo) && (
+          <div class="fact-card">
+            <span class="fact-label">{copy.linksLabel}</span>
+            <div class="fact-links">
+              {entry.data.url && (
+                <a href={entry.data.url} target="_blank" rel="noopener">
+                  {copy.liveLabel}
+                </a>
+              )}
+              {entry.data.repo && (
+                <a href={entry.data.repo} target="_blank" rel="noopener">
+                  {copy.repoLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </aside>
+    </div>
+  </section>
+
+  <section class="hero-media" data-reveal="scale">
+    {isAgendaShowcase ? (
+      <div class="showcase-hero">
+        <div class="showcase-phone-hero" data-parallax="8">
+          <div class="showcase-phone-copy">
+            <span class="showcase-label">{copy.phoneLabel}</span>
+            <h2>{copy.phoneIntroTitle}</h2>
+            <p>{copy.phoneIntroCopy}</p>
+            <div class="showcase-phone-points">
+              <span>WhatsApp Cloud API</span>
+              <span>Claude AI</span>
+              <span>Google Calendar API</span>
+            </div>
+          </div>
+
+          <div class="phone-stage is-hero">
+            <div class="phone-glow"></div>
+            <div class="phone-frame">
+              <div class="phone-notch"></div>
+              <div class="phone-screen">
+                <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+                  <source src={showcase.phoneVideo} type="video/mp4" />
+                </video>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : isPosShowcase ? (
+      <div class="showcase-hero showcase-hero-pos">
+        <div class="showcase-pos-hero" data-parallax="8">
+          <div class="showcase-pos-copy">
+            <span class="showcase-label">{copy.posHeroLabel}</span>
+            <h2>{copy.posHeroTitle}</h2>
+            <p>{copy.posHeroCopy}</p>
+            <div class="showcase-phone-points">
+              <span>Java 21 Swing</span>
+              <span>Spring Boot</span>
+              <span>Facturación CR</span>
+            </div>
+          </div>
+
+          <div class="showcase-pos-video">
+            <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+              <source src={showcase?.heroVideo} type="video/mp4" />
+            </video>
+          </div>
+        </div>
+      </div>
+    ) : isHubShowcase ? (
+      <div class="showcase-hero showcase-hero-pos">
+        <div class="showcase-pos-hero" data-parallax="8">
+          <div class="showcase-pos-copy">
+            <span class="showcase-label">{copy.hubHeroLabel}</span>
+            <h2>{copy.hubHeroTitle}</h2>
+            <p>{copy.hubHeroCopy}</p>
+            <div class="showcase-phone-points">
+              <span>Java 21 Swing</span>
+              <span>Spring Boot</span>
+              <span>Firma digital</span>
+            </div>
+          </div>
+
+          <div class="showcase-pos-video">
+            <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+              <source src={showcase?.heroVideo} type="video/mp4" />
+            </video>
+          </div>
+        </div>
+      </div>
+    ) : isAuraShowcase ? (
+      <div class="showcase-hero showcase-hero-pos">
+        <div class="showcase-pos-hero showcase-aura-hero" data-parallax="8">
+          <div class="showcase-pos-copy">
+            <span class="showcase-label">{copy.auraHeroLabel}</span>
+            <h2>{copy.auraHeroTitle}</h2>
+            <p>{copy.auraHeroCopy}</p>
+            <div class="showcase-phone-points">
+              <span>Flask</span>
+              <span>Jinja</span>
+              <span>Admin Desktop</span>
+            </div>
+          </div>
+
+          <div class="showcase-pos-video showcase-aura-video">
+            <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+              <source src={showcase?.heroVideo} type="video/mp4" />
+            </video>
+          </div>
+        </div>
+      </div>
+    ) : isLicenseShowcase ? (
+      <div class="showcase-hero showcase-hero-pos">
+        <div class="showcase-pos-hero" data-parallax="8">
+          <div class="showcase-pos-copy">
+            <span class="showcase-label">{copy.licenseHeroLabel}</span>
+            <h2>{copy.licenseHeroTitle}</h2>
+            <p>{copy.licenseHeroCopy}</p>
+            <div class="showcase-phone-points">
+              <span>ASP.NET Core 9</span>
+              <span>Clean Architecture</span>
+              <span>Multi-tenant MySQL</span>
+            </div>
+          </div>
+
+          <div class="showcase-pos-video showcase-license-hero">
+            <img src={showcase?.primaryImage} alt={entry.data.title} loading="eager" />
+          </div>
+        </div>
+      </div>
+    ) : entry.data.cover ? (
+      <div class="cover-frame" data-parallax="8">
+        <div class="cover-meta">
+          <span>{formatCategory(entry.data.category)}</span>
+          <span>{entry.data.client ?? entry.data.title}</span>
+        </div>
+        <Image
+          src={entry.data.cover}
+          alt={entry.data.title}
+          widths={[720, 1080, 1440, 1800]}
+          sizes="100vw"
+        />
       </div>
     ) : (
-      <div class="hero-placeholder" />
+      <div class="cover-placeholder" />
     )}
   </section>
 
-  <!-- LAYOUT: sidebar metadata + content -->
-  <div class="project-layout reveal">
+  <section class="content" data-reveal="fade">
+    <div class="content-shell">
+      <aside class="content-rail" data-reveal="fade-up">
+        <p class="section-kicker">{copy.overviewLabel}</p>
+        <p class="rail-copy">{entry.data.description}</p>
+      </aside>
 
-    <!-- SIDEBAR -->
-    <aside class="project-sidebar">
-      <dl class="meta-list">
-        <div class="meta-item">
-          <dt>{t('meta.year', lang)}</dt>
-          <dd>{entry.data.year}</dd>
-        </div>
-        <div class="meta-item">
-          <dt>{t('meta.role', lang)}</dt>
-          <dd>{entry.data.role.join(', ')}</dd>
-        </div>
-        {entry.data.client && (
-          <div class="meta-item">
-            <dt>{t('meta.client', lang)}</dt>
-            <dd>{entry.data.client}</dd>
-          </div>
-        )}
-        <div class="meta-item">
-          <dt>{t('meta.stack', lang)}</dt>
-          <dd class="stack-list">
-            {entry.data.stack.frontend?.map((s) => <span>{s}</span>)}
-            {entry.data.stack.backend?.map((s) => <span>{s}</span>)}
-            {entry.data.stack.infra?.map((s) => <span>{s}</span>)}
-          </dd>
-        </div>
-        {entry.data.url && (
-          <div class="meta-item">
-            <dt>URL</dt>
-            <dd>
-              <a href={entry.data.url} target="_blank" rel="noopener">
-                {t('common.viewProject', lang)}
-              </a>
-            </dd>
-          </div>
-        )}
-        {entry.data.repo && (
-          <div class="meta-item">
-            <dt>Repo</dt>
-            <dd>
-              <a href={entry.data.repo} target="_blank" rel="noopener">
-                {t('common.viewCode', lang)}
-              </a>
-            </dd>
-          </div>
-        )}
-      </dl>
-    </aside>
-
-    <!-- CONTENT -->
-    <div class="project-content">
-      <h1 class="project-title">{entry.data.title}</h1>
-      <p class="project-description">{entry.data.description}</p>
-      <div class="prose">
+      <article class="prose" data-reveal="fade-up">
         <Content />
-      </div>
+      </article>
     </div>
+  </section>
 
-  </div>
+  {isAgendaShowcase && (
+    <section class="showcase-flow">
+      <div class="showcase-flow-head">
+        <p class="section-kicker" data-reveal="fade-up">{copy.dashboardLabel}</p>
+      </div>
 
-  <!-- GALLERY -->
-  {entry.data.gallery && entry.data.gallery.length > 0 && (
-    <section class="project-gallery">
-      <div class="gallery-grid">
-        {entry.data.gallery.map((img) => (
-          <div class="gallery-item">
-            <Image src={img} alt="" />
+      <div class="showcase-flow-grid" data-stagger-group>
+        <div class="showcase-main cover-frame" data-stagger-item data-parallax="5">
+          <div class="cover-meta">
+            <span>{copy.dashboardLabel}</span>
+            <span>{entry.data.client ?? entry.data.title}</span>
+          </div>
+          <img src={showcase.dashboardImage} alt={`${entry.data.title} dashboard`} loading="lazy" />
+        </div>
+
+        <div class="showcase-calendar-shell" data-stagger-item data-parallax="4">
+          <div class="tablet-stage">
+            <div class="tablet-glow"></div>
+            <div class="tablet-frame">
+              <div class="tablet-camera"></div>
+              <div class="tablet-screen">
+                <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+                  <source src={showcase.calendarVideo} type="video/mp4" />
+                </video>
+              </div>
+              <div class="tablet-home-bar"></div>
+            </div>
+          </div>
+          <div class="showcase-panel-meta">
+            <span>{copy.calendarLabel}</span>
+            <span>{entry.data.stack.infra?.[2] ?? 'Google Calendar API'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="calendar-preview" aria-hidden="true">
+        <div class="calendar-preview-backdrop"></div>
+        <div class="calendar-preview-shell">
+          <div class="tablet-stage is-preview">
+            <div class="tablet-glow"></div>
+            <div class="tablet-frame">
+              <div class="tablet-camera"></div>
+              <div class="tablet-screen">
+                <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+                  <source src={showcase.calendarVideo} type="video/mp4" />
+                </video>
+              </div>
+              <div class="tablet-home-bar"></div>
+            </div>
+          </div>
+          <div class="showcase-panel-meta">
+            <span>{copy.calendarLabel}</span>
+            <span>{entry.data.stack.infra?.[2] ?? 'Google Calendar API'}</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  )}
+
+  {isPosShowcase && (
+    <section class="showcase-flow showcase-flow-pos">
+      <div class="showcase-flow-head">
+        <p class="section-kicker" data-reveal="fade-up">{copy.dashboardLabel}</p>
+      </div>
+
+      <div class="showcase-pos-stack" data-stagger-group>
+        <div class="showcase-pos-card showcase-pos-card-video" data-stagger-item data-parallax="4">
+          <div class="cover-meta">
+            <span>{copy.posInterfaceLabel}</span>
+            <span>Spring Boot · Java Swing</span>
+          </div>
+          <div class="showcase-pos-video-shell">
+            <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+              <source src={showcase?.heroVideo} type="video/mp4" />
+            </video>
+          </div>
+        </div>
+
+        <div class="showcase-pos-grid">
+          <div class="showcase-pos-card showcase-pos-card-main" data-stagger-item data-parallax="5">
+          <div class="cover-meta">
+            <span>{copy.posPrimaryLabel}</span>
+            <span>{entry.data.title}</span>
+          </div>
+          <div class="showcase-pos-media is-device">
+            <img src={showcase?.primaryImage} alt={`${entry.data.title} main interface`} loading="lazy" />
+          </div>
+        </div>
+
+          <div class="showcase-pos-card showcase-pos-card-side" data-stagger-item data-parallax="3">
+            <div class="cover-meta">
+              <span>{copy.posSecondaryLabel}</span>
+              <span>{entry.data.stack.backend?.[1] ?? 'MySQL 8'}</span>
+            </div>
+            <div class="showcase-pos-media is-report">
+              <img src={showcase?.secondaryImage} alt={`${entry.data.title} reports`} loading="lazy" />
+            </div>
+          </div>
+
+          {entry.data.gallery?.[0] && (
+            <div class="showcase-pos-card showcase-pos-card-tertiary" data-stagger-item data-parallax="2">
+              <div class="cover-meta">
+                <span>{copy.posTertiaryLabel}</span>
+                <span>{entry.data.stack.infra?.[0] ?? 'DGT API'}</span>
+              </div>
+              <div class="showcase-pos-media is-report">
+                <Image
+                  src={entry.data.gallery[0]}
+                  alt={`${entry.data.title} tax operation`}
+                  widths={[720, 1080, 1440]}
+                  sizes="100vw"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {isHubShowcase && (
+    <section class="showcase-flow showcase-flow-pos">
+      <div class="showcase-flow-head">
+        <p class="section-kicker" data-reveal="fade-up">{copy.dashboardLabel}</p>
+      </div>
+
+      <div class="showcase-pos-stack" data-stagger-group>
+        <div class="showcase-pos-card showcase-pos-card-video" data-stagger-item data-parallax="4">
+          <div class="cover-meta">
+            <span>{copy.hubHeroLabel}</span>
+            <span>{entry.data.title}</span>
+          </div>
+          <div class="showcase-pos-video-shell">
+            <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+              <source src={showcase?.heroVideo} type="video/mp4" />
+            </video>
+          </div>
+        </div>
+
+        <div class="showcase-pos-grid">
+          <div class="showcase-pos-card showcase-pos-card-main" data-stagger-item data-parallax="5">
+            <div class="cover-meta">
+              <span>{copy.hubPrimaryLabel}</span>
+              <span>{entry.data.title}</span>
+            </div>
+            <div class="showcase-pos-media is-device">
+              <img src={showcase?.primaryImage} alt={`${entry.data.title} main panel`} loading="lazy" />
+            </div>
+          </div>
+
+          <div class="showcase-pos-card showcase-pos-card-side" data-stagger-item data-parallax="3">
+            <div class="cover-meta">
+              <span>{copy.hubSecondaryLabel}</span>
+              <span>{entry.data.stack.backend?.[0] ?? 'Spring Boot'}</span>
+            </div>
+            <div class="showcase-pos-media is-report is-loading-shot">
+              <img src={showcase?.secondaryImage} alt={`${entry.data.title} loading screen`} loading="lazy" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {isAuraShowcase && (
+    <section class="showcase-flow showcase-flow-pos">
+      <div class="showcase-flow-head">
+        <p class="section-kicker" data-reveal="fade-up">{copy.dashboardLabel}</p>
+      </div>
+
+      <div class="showcase-pos-stack" data-stagger-group>
+        <div class="showcase-pos-card showcase-pos-card-video" data-stagger-item data-parallax="4">
+          <div class="cover-meta">
+            <span>{copy.auraVideoLabel}</span>
+            <span>{entry.data.title}</span>
+          </div>
+          <div class="showcase-pos-video-shell">
+            <video autoplay loop muted playsinline webkit-playsinline preload="auto">
+              <source src={showcase?.heroVideo} type="video/mp4" />
+            </video>
+          </div>
+        </div>
+
+        <div class="showcase-pos-grid">
+          <div class="showcase-pos-card showcase-pos-card-main" data-stagger-item data-parallax="5">
+            <div class="cover-meta">
+              <span>{copy.auraPrimaryLabel}</span>
+              <span>{entry.data.title}</span>
+            </div>
+            <div class="showcase-pos-media is-device is-aura-panel">
+              <img src={showcase?.primaryImage} alt={`${entry.data.title} main view`} loading="lazy" />
+            </div>
+          </div>
+
+          <div class="showcase-pos-card showcase-pos-card-side" data-stagger-item data-parallax="3">
+            <div class="cover-meta">
+              <span>{copy.auraSecondaryLabel}</span>
+              <span>{entry.data.stack.frontend?.[0] ?? 'Flask/Jinja'}</span>
+            </div>
+            <div class="showcase-pos-media is-report is-aura-product">
+              <img src={showcase?.secondaryImage} alt={`${entry.data.title} featured product`} loading="lazy" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {isLicenseShowcase && (
+    <section class="showcase-flow showcase-flow-pos">
+      <div class="showcase-flow-head">
+        <p class="section-kicker" data-reveal="fade-up">{copy.dashboardLabel}</p>
+      </div>
+
+      <div class="showcase-pos-stack" data-stagger-group>
+        <div class="showcase-pos-card showcase-pos-card-video" data-stagger-item data-parallax="4">
+          <div class="cover-meta">
+            <span>{copy.licensePrimaryLabel}</span>
+            <span>{entry.data.title}</span>
+          </div>
+          <div class="showcase-pos-video-shell showcase-license-shell">
+            <img src={showcase?.primaryImage} alt={`${entry.data.title} — crear licencia`} loading="lazy" />
+          </div>
+        </div>
+
+        <div class="showcase-pos-grid">
+          <div class="showcase-pos-card showcase-pos-card-main" data-stagger-item data-parallax="5">
+            <div class="cover-meta">
+              <span>{copy.licenseSecondaryLabel}</span>
+              <span>{entry.data.title}</span>
+            </div>
+            <div class="showcase-pos-media is-device is-license-panel">
+              <img src={showcase?.secondaryImage} alt={`${entry.data.title} — detalle`} loading="lazy" />
+            </div>
+          </div>
+
+          <div class="showcase-pos-card showcase-pos-card-side" data-stagger-item data-parallax="3">
+            <div class="cover-meta">
+              <span>{copy.licenseTertiaryLabel}</span>
+              <span>basic · professional · enterprise</span>
+            </div>
+            <div class="showcase-pos-media is-report is-license-plans">
+              <img src={showcase?.tertiaryImage} alt={`${entry.data.title} — planes`} loading="lazy" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {!isPosShowcase && entry.data.gallery && entry.data.gallery.length > 0 && (
+    <section class="gallery">
+      <div class="gallery-head">
+        <p class="section-kicker" data-reveal="fade-up">{copy.galleryLabel}</p>
+      </div>
+
+      <div class="gallery-grid" data-stagger-group>
+        {entry.data.gallery.map((img, index) => (
+          <div class="gallery-item" data-stagger-item data-parallax="6">
+            <span class="gallery-badge">{String(index + 1).padStart(2, '0')}</span>
+            <Image src={img} alt="" widths={[540, 900, 1200]} sizes="(max-width: 767px) 100vw, 50vw" />
           </div>
         ))}
       </div>
     </section>
   )}
 
-  <!-- NEXT PROJECT -->
-  <section class="next-project reveal">
-    <span class="next-label">{t('works.nextProject', lang)}</span>
+  <section class="next-project">
+    <p class="section-kicker" data-reveal="fade-up">{copy.nextLabel}</p>
     <a href={`/${lang}/works/${nextSlug}/`} class="next-link">
-      {nextEntry.data.title}
-      <span aria-hidden="true">→</span>
+      <div class="next-copy">
+        <Meta items={[String(nextEntry.data.number).padStart(2, '0'), formatCategory(nextEntry.data.category), nextEntry.data.year]} />
+        <span>{nextEntry.data.title}</span>
+      </div>
+      <div class="next-thumb" aria-hidden="true">
+        {nextEntry.data.cover ? (
+          <Image src={nextEntry.data.cover} alt="" widths={[320, 480, 720]} sizes="(max-width: 767px) 100vw, 24vw" />
+        ) : (
+          <div class="next-thumb-placeholder" />
+        )}
+      </div>
     </a>
   </section>
-
 </BaseLayout>
 
-<style>
-  /* Hero image */
-  .project-hero {
-    width: 100%;
-  }
-  .hero-image {
-    aspect-ratio: 16 / 10;
-    overflow: hidden;
-  }
-  .hero-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .hero-placeholder {
-    aspect-ratio: 16 / 10;
-    background: var(--bg-elev);
+<script>
+  const showcaseVideos = document.querySelectorAll('.phone-screen video, .tablet-screen video');
+
+  for (const video of showcaseVideos) {
+    const shell = video.closest('.phone-screen, .tablet-screen');
+    if (!(shell instanceof HTMLElement) || !(video instanceof HTMLVideoElement)) continue;
+
+    const source = video.currentSrc || video.querySelector('source')?.src || '';
+    const storageKey = source ? `showcase-frame:${source}` : '';
+    const debugLabel = shell.classList.contains('phone-screen') ? 'agenda-phone' : 'agenda-tablet';
+
+    const applyFallback = (dataUrl) => {
+      if (!dataUrl) return;
+      shell.style.backgroundImage = `url("${dataUrl}")`;
+      shell.style.backgroundSize = 'contain';
+      shell.style.backgroundPosition = 'center';
+      shell.style.backgroundRepeat = 'no-repeat';
+      console.log(`[${debugLabel}] fallback applied`);
+    };
+
+    if (storageKey) {
+      try {
+        const cached = sessionStorage.getItem(storageKey);
+        console.log(`[${debugLabel}] cached frame`, cached ? 'hit' : 'miss');
+        if (cached) applyFallback(cached);
+      } catch {}
+    }
+
+    const tryPlay = () => {
+      console.log(`[${debugLabel}] tryPlay`, {
+        readyState: video.readyState,
+        currentTime: video.currentTime,
+        paused: video.paused,
+        ended: video.ended,
+      });
+      const promise = video.play();
+      if (promise && typeof promise.catch === 'function') {
+        promise.catch((error) => {
+          console.log(`[${debugLabel}] play rejected`, error?.message ?? error);
+        });
+      }
+    };
+
+    const captureFrame = () => {
+      if (!storageKey || !video.videoWidth || !video.videoHeight) return;
+
+      try {
+        console.log(`[${debugLabel}] captureFrame`, {
+          width: video.videoWidth,
+          height: video.videoHeight,
+        });
+        const maxWidth = shell.classList.contains('phone-screen') ? 360 : 960;
+        const scale = Math.min(1, maxWidth / video.videoWidth);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+        canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/webp', 0.86);
+        sessionStorage.setItem(storageKey, dataUrl);
+        applyFallback(dataUrl);
+      } catch {}
+    };
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    console.log(`[${debugLabel}] init`, {
+      source,
+      readyState: video.readyState,
+      networkState: video.networkState,
+    });
+
+    if (video.readyState >= 2) {
+      console.log(`[${debugLabel}] ready immediately`);
+      captureFrame();
+      tryPlay();
+    } else {
+      video.addEventListener(
+        'loadeddata',
+        () => {
+          console.log(`[${debugLabel}] loadeddata`);
+          captureFrame();
+          tryPlay();
+        },
+        { once: true }
+      );
+    }
+
+    video.addEventListener('canplay', () => {
+      console.log(`[${debugLabel}] canplay`);
+      tryPlay();
+    });
+    video.addEventListener('playing', () => {
+      console.log(`[${debugLabel}] playing`);
+      captureFrame();
+    });
+    video.addEventListener('error', () => {
+      const mediaError = video.error;
+      console.log(`[${debugLabel}] error`, mediaError ? mediaError.code : 'unknown');
+    });
+
+    window.addEventListener(
+      'pageshow',
+      () => {
+        console.log(`[${debugLabel}] pageshow`);
+        tryPlay();
+      },
+      { passive: true }
+    );
   }
 
-  /* Layout 2 columnas */
-  .project-layout {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 4rem;
-    max-width: var(--max-w);
-    margin: 0 auto;
-    padding: 4rem var(--pad-x);
-  }
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (canHover) {
+    const shells = document.querySelectorAll('.showcase-calendar-shell');
+    for (const shell of shells) {
+      const flow = shell.closest('.showcase-flow');
+      const preview = flow?.querySelector('.calendar-preview');
+      if (!(preview instanceof HTMLElement)) continue;
 
-  @media (max-width: 767px) {
-    .project-layout {
-      grid-template-columns: 1fr;
-      gap: 2rem;
+      shell.addEventListener('mouseenter', () => {
+        preview.classList.add('is-visible');
+      });
+
+      shell.addEventListener('mouseleave', () => {
+        preview.classList.remove('is-visible');
+      });
     }
   }
+</script>
 
-  /* Sidebar */
-  .project-sidebar {
-    position: sticky;
-    top: 6rem;
-    align-self: start;
+<style>
+  .hero,
+  .hero-media,
+  .content,
+  .showcase-flow,
+  .gallery,
+  .next-project {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding-inline: var(--pad-x);
   }
 
-  .meta-list {
-    margin: 0;
-    padding: 0;
+  .hero {
+    padding-top: 8rem;
+    padding-bottom: 4rem;
+  }
+
+  .hero-head,
+  .gallery-head {
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    justify-content: space-between;
+    gap: 2rem;
   }
 
-  .meta-item dt {
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--fg-subtle);
-    margin-bottom: 0.25rem;
-  }
-
-  .meta-item dd {
+  .section-kicker,
+  .fact-label,
+  .fact-group p {
+    margin: 0;
     font-family: var(--font-mono);
     font-size: var(--fs-small);
-    color: var(--fg-muted);
+    color: var(--fg-subtle);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .hero-meta {
+    justify-content: flex-end;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+    gap: 4rem;
+    align-items: start;
+    margin-top: 3rem;
+  }
+
+  .hero-copy h1 {
     margin: 0;
-  }
-
-  .stack-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .meta-item a {
-    color: var(--fg);
-    text-decoration: none;
-    border-bottom: 1px solid var(--line);
-    transition: border-color var(--dur-fast) var(--ease-out);
-  }
-  .meta-item a:hover {
-    border-color: var(--accent);
-  }
-
-  /* Content */
-  .project-title {
     font-family: var(--font-serif);
-    font-size: var(--fs-h1);
+    font-size: clamp(3.4rem, 7vw, 6.8rem);
     font-weight: 400;
-    letter-spacing: -0.02em;
-    margin: 0 0 1.5rem;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
   }
 
-  .project-description {
-    font-size: 1.125rem;
+  .hero-description,
+  .rail-copy,
+  .prose {
     color: var(--fg-muted);
-    margin: 0 0 3rem;
+  }
+
+  .hero-description {
+    margin: 1.5rem 0 0;
+    max-width: 40rem;
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+
+  .hero-strip,
+  .cover-meta {
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .hero-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 2rem;
+  }
+
+  .hero-strip-item {
+    display: grid;
+    gap: 0.45rem;
+    padding: 1rem 1.1rem;
+    background: rgba(10, 10, 10, 0.36);
+    backdrop-filter: blur(16px);
+  }
+
+  .hero-strip-item span,
+  .cover-meta span,
+  .gallery-badge {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-subtle);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .hero-strip-item strong {
+    font-family: var(--font-serif);
+    font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+  }
+
+  .hero-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 2rem;
+  }
+
+  .hero-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.7rem 1.1rem;
+    border: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg);
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .hero-link.is-primary,
+  .hero-link:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+    transform: translateY(-1px);
+  }
+
+  .hero-facts {
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .fact-card {
+    background: rgba(10, 10, 10, 0.34);
+    backdrop-filter: blur(18px);
+    padding: 1.25rem;
+    display: grid;
+    gap: 1rem;
+    position: relative;
+  }
+
+  .fact-card::before,
+  .content-rail::before,
+  .next-copy::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.25rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0.85;
+  }
+
+  .fact-group {
+    display: grid;
+    gap: 0.4rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .fact-group span,
+  .fact-links a {
+    color: var(--fg-muted);
     line-height: 1.6;
   }
 
-  /* Prose (contenido MDX) */
-  .prose {
-    max-width: 65ch;
-    font-size: var(--fs-body);
-    line-height: 1.75;
+  .stack-groups {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .fact-links {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .fact-links a {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg);
+  }
+
+  .fact-links a:hover {
+    color: var(--accent);
+  }
+
+  .hero-media {
+    padding-bottom: 4rem;
+  }
+
+  .showcase-hero {
+    display: grid;
+  }
+
+  .showcase-phone-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(13rem, 17rem);
+    gap: 2rem;
+    align-items: center;
+    padding: 1.6rem 1.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+      rgba(10, 10, 10, 0.3);
+    backdrop-filter: blur(18px);
+    overflow: hidden;
+  }
+
+  .showcase-pos-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(20rem, 1.08fr);
+    gap: 1.25rem;
+    align-items: center;
+    padding: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+      rgba(10, 10, 10, 0.3);
+    backdrop-filter: blur(18px);
+    overflow: hidden;
+  }
+
+  .showcase-phone-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.25rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0.85;
+  }
+
+  .showcase-pos-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.25rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0.85;
+  }
+
+  .showcase-device-shell,
+  .showcase-calendar-shell {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+      rgba(10, 10, 10, 0.3);
+    backdrop-filter: blur(18px);
+    overflow: visible;
+  }
+
+  .showcase-phone-copy {
+    display: grid;
+    gap: 1rem;
+    max-width: 36rem;
+  }
+
+  .showcase-pos-copy {
+    display: grid;
+    gap: 1rem;
+    max-width: 32rem;
+  }
+
+  .showcase-phone-copy h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4vw, 3.3rem);
+    font-weight: 400;
+    line-height: 0.94;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+
+  .showcase-pos-copy h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 4.8vw, 4rem);
+    font-weight: 400;
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    color: var(--fg);
+  }
+
+  .showcase-phone-copy p {
+    margin: 0;
+    max-width: 34rem;
     color: var(--fg-muted);
+    line-height: 1.72;
+  }
+
+  .showcase-pos-copy p {
+    margin: 0;
+    max-width: 30rem;
+    color: var(--fg-muted);
+    line-height: 1.72;
+  }
+
+  .showcase-phone-points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .showcase-phone-points span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.2rem;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-subtle);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .showcase-device-shell {
+    min-height: 34rem;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    padding: 1.4rem 1.2rem;
+  }
+
+  .showcase-calendar-shell {
+    min-height: 27rem;
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.85rem;
+    transition:
+      transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 0.6s ease;
+  }
+
+  .showcase-flow {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .showcase-flow-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .showcase-flow-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
+    gap: 1rem;
+    margin-top: 2rem;
+    align-items: stretch;
+    overflow: visible;
+  }
+
+  .showcase-pos-video {
+    position: relative;
+    min-height: 26rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      radial-gradient(circle at top, rgba(239, 226, 200, 0.08), transparent 55%),
+      rgba(9, 9, 9, 0.58);
+    box-shadow:
+      0 2rem 4rem rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+  }
+
+  .showcase-aura-hero {
+    background:
+      linear-gradient(180deg, rgba(255, 244, 240, 0.04), rgba(255, 255, 255, 0.01)),
+      rgba(16, 12, 12, 0.34);
+  }
+
+  .showcase-aura-video {
+    background:
+      radial-gradient(circle at top, rgba(239, 226, 200, 0.08), transparent 55%),
+      rgba(19, 12, 12, 0.62);
+  }
+
+  .showcase-license-hero {
+    background:
+      radial-gradient(circle at top, rgba(100, 160, 255, 0.06), transparent 55%),
+      rgba(12, 14, 22, 0.7);
+  }
+
+  .showcase-pos-video video,
+  .showcase-license-hero img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 26rem;
+    object-fit: cover;
+  }
+
+  .showcase-license-shell img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.9) brightness(0.92) contrast(0.96);
+  }
+
+  .showcase-pos-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .showcase-pos-stack {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .showcase-pos-card {
+    position: relative;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-clip: padding-box;
+    overflow: hidden;
+  }
+
+  .showcase-pos-video-shell,
+  .showcase-pos-media {
+    position: relative;
+    min-height: 0;
+    background:
+      radial-gradient(circle at top, rgba(239, 226, 200, 0.06), transparent 48%),
+      rgba(8, 8, 8, 0.78);
+    overflow: hidden;
+  }
+
+  .showcase-pos-video-shell {
+    aspect-ratio: 16 / 8.4;
+  }
+
+  .showcase-pos-media {
+    display: grid;
+    place-items: center;
+    padding: 1.35rem;
+  }
+
+  .showcase-pos-media.is-device {
+    min-height: 27rem;
+  }
+
+  .showcase-pos-media.is-report {
+    min-height: 27rem;
+  }
+
+  .showcase-pos-media.is-aura-panel,
+  .showcase-pos-media.is-aura-product {
+    background:
+      radial-gradient(circle at top, rgba(239, 226, 200, 0.06), transparent 52%),
+      rgba(18, 12, 12, 0.6);
+  }
+
+  .showcase-pos-media.is-aura-product {
+    min-height: 24rem;
+  }
+
+  .showcase-pos-media.is-loading-shot {
+    min-height: 18rem;
+    background:
+      radial-gradient(circle at top, rgba(239, 226, 200, 0.03), transparent 54%),
+      rgba(8, 8, 8, 0.82);
+  }
+
+  .showcase-pos-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.25rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0.85;
+    z-index: 2;
+  }
+
+  .showcase-pos-card img,
+  .showcase-pos-video-shell video,
+  .showcase-pos-media video {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .showcase-pos-card img {
+    background: rgba(8, 8, 8, 0.7);
+  }
+
+  .showcase-pos-media.is-device img {
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .showcase-pos-media.is-device video {
+    object-fit: cover;
+    filter: saturate(0.94) brightness(0.95);
+  }
+
+  .showcase-pos-media.is-report img {
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .showcase-pos-video-shell video {
+    object-fit: cover;
+    filter: saturate(0.9) brightness(0.92) contrast(0.96);
+  }
+
+  .showcase-pos-card-main {
+    min-height: 0;
+  }
+
+  .showcase-pos-card-side {
+    min-height: 0;
+  }
+
+  .showcase-pos-card-video {
+    min-height: 0;
+  }
+
+  .showcase-pos-card-tertiary {
+    min-height: 0;
+    grid-column: 1 / -1;
+  }
+
+  .showcase-pos-card-main .showcase-pos-media,
+  .showcase-pos-card-side .showcase-pos-media {
+    background:
+      radial-gradient(circle at top, rgba(239, 226, 200, 0.05), transparent 52%),
+      rgba(10, 10, 10, 0.62);
+  }
+
+  .showcase-pos-card-tertiary .showcase-pos-media {
+    min-height: 22rem;
+    background:
+      radial-gradient(circle at top, rgba(239, 226, 200, 0.04), transparent 54%),
+      rgba(10, 10, 10, 0.58);
+  }
+
+  @media (max-width: 1080px) {
+    .showcase-pos-hero,
+    .showcase-pos-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .showcase-pos-video-shell {
+      aspect-ratio: 16 / 10;
+    }
+
+    .showcase-pos-media.is-device,
+    .showcase-pos-media.is-report {
+      min-height: 24rem;
+    }
+  }
+
+  .calendar-preview {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 50;
+    transition:
+      opacity 220ms var(--ease-out),
+      visibility 220ms var(--ease-out);
+  }
+
+  .calendar-preview.is-visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .calendar-preview-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 4, 4, 0.24);
+    backdrop-filter: blur(3px);
+  }
+
+  .calendar-preview-shell {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(52vw, 58rem);
+    display: grid;
+    gap: 0.9rem;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
+      rgba(10, 10, 10, 0.9);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 2.8rem 6rem rgba(0, 0, 0, 0.46);
+    transform: translate(-50%, -50%) scale(0.96);
+    transition: transform 220ms var(--ease-out);
+  }
+
+  .calendar-preview.is-visible .calendar-preview-shell {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .showcase-device-shell::before,
+  .showcase-calendar-shell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.25rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0.85;
+  }
+
+  .showcase-label,
+  .showcase-panel-meta span {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .showcase-label {
+    margin-bottom: 1rem;
+    color: var(--fg);
+  }
+
+  .showcase-panel-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .showcase-panel-meta span {
+    padding: 0.8rem 0.9rem;
+    color: var(--fg);
+    background: rgba(10, 10, 10, 0.46);
+    backdrop-filter: blur(16px);
+  }
+
+  .phone-stage,
+  .tablet-stage {
+    position: relative;
+    width: 100%;
+    display: grid;
+    place-items: center;
+  }
+
+  .phone-stage {
+    min-height: 31rem;
+    padding: 0.8rem 0;
+  }
+
+  .phone-stage.is-hero {
+    min-height: 0;
+    width: 100%;
+    padding: 0.5rem 0;
+  }
+
+  .tablet-stage {
+    min-height: 100%;
+    padding: 0.4rem 0;
+  }
+
+  .tablet-stage.is-preview {
+    min-height: auto;
+    padding: 0;
+  }
+
+  .phone-glow,
+  .tablet-glow {
+    position: absolute;
+    inset: auto;
+    border-radius: 999px;
+    filter: blur(56px);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .phone-glow {
+    top: 15%;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background:
+      radial-gradient(ellipse at center, rgba(239, 226, 200, 0.18) 0%, transparent 62%);
+  }
+
+  .tablet-glow {
+    top: 10%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    background:
+      radial-gradient(ellipse at center, rgba(239, 226, 200, 0.14) 0%, transparent 60%);
+  }
+
+  .phone-frame,
+  .tablet-frame {
+    position: relative;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(30, 30, 32, 0.96), rgba(10, 10, 10, 0.98)),
+      linear-gradient(145deg, rgba(239, 226, 200, 0.08), transparent 42%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 2.35rem 5rem rgba(0, 0, 0, 0.42),
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 0.8rem rgba(239, 226, 200, 0.04);
+  }
+
+  .phone-frame {
+    width: min(20rem, 100%);
+    padding: 10px;
+    border-radius: 34px;
+    transform: rotateY(-9deg) rotateX(4deg);
+    transition:
+      transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 0.6s ease;
+  }
+
+  .showcase-phone-hero .phone-frame {
+    width: min(20rem, 100%);
+  }
+
+  .tablet-frame {
+    width: 100%;
+    max-width: 520px;
+    padding: 14px;
+    border-radius: 22px;
+    transform: rotateY(9deg) rotateX(-3deg);
+    transition:
+      transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 0.6s ease;
+  }
+
+  .phone-notch,
+  .tablet-camera,
+  .tablet-home-bar {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(8, 8, 8, 0.98);
+  }
+
+  .phone-notch {
+    top: 9px;
+    width: 92px;
+    height: 22px;
+    border-radius: 0 0 14px 14px;
+  }
+
+  .tablet-camera {
+    top: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+  }
+
+  .tablet-home-bar {
+    position: static;
+    transform: none;
+    width: 80px;
+    height: 4px;
+    margin: 8px auto 0;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .phone-screen,
+  .tablet-screen {
+    overflow: hidden;
+    background: #000;
+    position: relative;
+  }
+
+  .phone-screen {
+    border-radius: 26px;
+    aspect-ratio: 9 / 19.5;
+  }
+
+  .tablet-screen {
+    border-radius: 12px;
+    aspect-ratio: 16 / 9;
+  }
+
+  .phone-screen video,
+  .tablet-screen video,
+  .showcase-main img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+  }
+
+  .phone-screen,
+  .tablet-screen {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .phone-screen::after,
+  .tablet-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 18%, transparent 76%, rgba(0, 0, 0, 0.18)),
+      linear-gradient(115deg, rgba(255, 255, 255, 0.08), transparent 34%);
+    pointer-events: none;
+  }
+
+  .tablet-screen video {
+    pointer-events: none;
+  }
+
+  .showcase-phone-hero:hover .phone-frame {
+    transform: rotateY(-3deg) rotateX(1.5deg) scale(1.04);
+    box-shadow:
+      0 3rem 6.6rem rgba(0, 0, 0, 0.48),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 1.2rem rgba(239, 226, 200, 0.06);
+  }
+
+  .showcase-calendar-shell:hover {
+    transform: translateY(-0.2rem);
+    z-index: 6;
+  }
+
+  .showcase-calendar-shell:hover .tablet-frame {
+    transform: rotateY(3deg) rotateX(-1.5deg) scale(1.09);
+    box-shadow:
+      0 3.1rem 6.7rem rgba(0, 0, 0, 0.48),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 1rem rgba(239, 226, 200, 0.05);
+  }
+
+  .showcase-calendar-shell:hover .tablet-screen video {
+    transform: scale(1.045);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .showcase-flow-grid:hover .showcase-main {
+      opacity: 0.58;
+      transform: scale(0.985);
+      transition:
+        opacity var(--dur-fast) var(--ease-out),
+        transform var(--dur-fast) var(--ease-out);
+    }
+
+    .showcase-flow-grid:hover .showcase-calendar-shell {
+      opacity: 1;
+    }
+  }
+
+  .cover-frame,
+  .cover-placeholder {
+    background: var(--bg-elev);
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.16);
+  }
+
+  .cover-frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.93) contrast(1.03);
+  }
+
+  .cover-frame :global(img),
+  .cover-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.93) contrast(1.03);
+  }
+
+  .cover-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%, rgba(0, 0, 0, 0.2) 100%),
+      linear-gradient(135deg, rgba(239, 226, 200, 0.09), transparent 40%),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cover-frame::after {
+    content: '';
+    position: absolute;
+    inset: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cover-meta {
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cover-meta span {
+    padding: 0.8rem 0.9rem;
+    background: rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(16px);
+    color: var(--fg);
+  }
+
+  .cover-placeholder {
+    background: linear-gradient(135deg, var(--bg-elev), var(--bg));
+  }
+
+  .content {
+    padding-top: 4rem;
+    border-top: 1px solid var(--line);
+    padding-bottom: 4rem;
+  }
+
+  .content-shell {
+    display: grid;
+    grid-template-columns: minmax(14rem, 0.45fr) minmax(0, 1fr);
+    gap: 4rem;
+  }
+
+  .content-rail {
+    position: sticky;
+    top: 6rem;
+    align-self: start;
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    background: rgba(10, 10, 10, 0.28);
+    backdrop-filter: blur(16px);
+  }
+
+  .rail-copy {
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .prose {
+    max-width: 68ch;
+    font-size: 1.02rem;
+    line-height: 1.86;
   }
 
   .prose :global(h2) {
+    margin: 0 0 1rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--line);
     font-family: var(--font-serif);
-    font-size: var(--fs-h2);
+    font-size: clamp(2rem, 4vw, 3.25rem);
     font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
     color: var(--fg);
-    margin: 2.5rem 0 1rem;
   }
 
   .prose :global(p) {
     margin: 0 0 1.5rem;
+  }
+
+  .prose :global(h2 + p) {
+    max-width: 62ch;
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0 0 2rem;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .prose :global(li) {
+    position: relative;
+    padding: 0.9rem 0 0.9rem 2.3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--fg-muted);
+    line-height: 1.72;
+  }
+
+  .prose :global(ul > li)::before {
+    content: '✤';
+    position: absolute;
+    left: 0.25rem;
+    top: 0.9rem;
+    font-family: var(--font-serif);
+    font-size: 0.92rem;
+    line-height: 1;
+    color: var(--accent);
+    opacity: 0.9;
+  }
+
+  .prose :global(ol) {
+    counter-reset: case-list;
+  }
+
+  .prose :global(ol > li) {
+    counter-increment: case-list;
+  }
+
+  .prose :global(ol > li)::before {
+    content: counter(case-list, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 0.82rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--fg-subtle);
+  }
+
+  .prose :global(blockquote) {
+    margin: 0 0 2rem;
+    padding: 1.4rem 1.4rem 1.4rem 1.6rem;
+    border-left: 1px solid rgba(239, 226, 200, 0.55);
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--fg);
+  }
+
+  .prose :global(blockquote p:last-child) {
+    margin-bottom: 0;
   }
 
   .prose :global(code) {
@@ -266,67 +1903,249 @@ const nextSlug = nextEntry.data.urlSlug.replace(/^(es|en)-/, '');
     padding: 0.1em 0.4em;
   }
 
-  /* Gallery */
-  .project-gallery {
-    max-width: var(--max-w);
-    margin: 0 auto;
-    padding: 0 var(--pad-x) 4rem;
+  .gallery {
+    padding-top: 4rem;
+    border-top: 1px solid var(--line);
+    padding-bottom: 4rem;
   }
 
   .gallery-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
-  }
-
-  @media (max-width: 767px) {
-    .gallery-grid {
-      grid-template-columns: 1fr;
-    }
+    margin-top: 2rem;
   }
 
   .gallery-item {
     overflow: hidden;
     aspect-ratio: 4 / 3;
+    background: var(--bg-elev);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .gallery-item img {
+  .gallery-item:nth-child(4n + 1) {
+    grid-column: span 2;
+    aspect-ratio: 16 / 9;
+  }
+
+  .gallery-item :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+    filter: saturate(0.94) contrast(1.02);
   }
 
-  /* Next project */
+  .gallery-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 35%, rgba(0, 0, 0, 0.12) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .gallery-item::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.8;
+  }
+
+  .gallery-badge {
+    position: absolute;
+    top: 0.85rem;
+    left: 0.85rem;
+    z-index: 2;
+    padding: 0.45rem 0.55rem;
+    background: rgba(10, 10, 10, 0.54);
+    backdrop-filter: blur(12px);
+    color: var(--fg);
+  }
+
   .next-project {
+    padding-top: 4rem;
+    padding-bottom: 6rem;
     border-top: 1px solid var(--line);
-    max-width: var(--max-w);
-    margin: 0 auto;
-    padding: 4rem var(--pad-x) 6rem;
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 1rem;
-  }
-
-  .next-label {
-    font-family: var(--font-mono);
-    font-size: var(--fs-small);
-    color: var(--fg-subtle);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
   }
 
   .next-link {
-    font-family: var(--font-serif);
-    font-size: var(--fs-h2);
-    font-weight: 400;
-    color: var(--fg);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 24vw);
     gap: 1rem;
+    align-items: stretch;
+    color: inherit;
+  }
+
+  .next-link:hover .next-copy span {
+    color: var(--accent);
+  }
+
+  .next-link:hover .next-copy {
+    transform: translateX(0.25rem);
+  }
+
+  .next-copy {
+    display: grid;
+    align-content: end;
+    gap: 1rem;
+    min-height: 16rem;
+    padding: 1.4rem;
+    background: rgba(10, 10, 10, 0.34);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--line);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .next-copy span {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4.5vw, 4rem);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--fg);
     transition: color var(--dur-fast) var(--ease-out);
   }
-  .next-link:hover {
-    color: var(--accent);
+
+  .next-thumb,
+  .next-thumb-placeholder {
+    min-height: 16rem;
+    background: var(--bg-elev);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .next-thumb {
+    position: relative;
+  }
+
+  .next-thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .next-link:hover .next-thumb :global(img) {
+    transform: scale(1.04);
+  }
+
+  .next-thumb::after {
+    content: '';
+    position: absolute;
+    inset: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+  }
+
+  .next-thumb-placeholder {
+    background: linear-gradient(135deg, var(--bg-elev), var(--bg));
+  }
+
+  @media (max-width: 959px) {
+    .hero-head,
+    .hero-grid,
+    .content-shell {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .hero-strip,
+    .cover-meta,
+    .next-link {
+      grid-template-columns: 1fr;
+    }
+
+    .showcase-flow-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .calendar-preview {
+      display: none;
+    }
+
+    .calendar-preview {
+      display: none;
+    }
+
+    .showcase-phone-hero {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    .showcase-device-shell,
+    .showcase-calendar-shell {
+      min-height: auto;
+    }
+
+    .showcase-phone-hero .phone-frame {
+      width: min(16rem, 100%);
+    }
+
+    .hero-meta {
+      justify-content: flex-start;
+    }
+
+    .content-rail {
+      position: static;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .hero {
+      padding-top: 6.5rem;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(3rem, 13vw, 4.9rem);
+      line-height: 0.92;
+    }
+
+    .hero-links {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .hero-link {
+      width: 100%;
+    }
+
+    .hero-strip-item,
+    .cover-meta span,
+    .next-copy {
+      padding-inline: 1rem;
+    }
+
+    .showcase-device-shell {
+      padding-inline: 1rem;
+    }
+
+    .phone-frame {
+      width: min(16rem, 100%);
+    }
+
+    .phone-stage.is-hero {
+      min-height: 0;
+    }
+
+    .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .gallery-item:nth-child(4n + 1) {
+      grid-column: auto;
+      aspect-ratio: 4 / 3;
+    }
+
+    .next-link {
+      font-size: clamp(1.9rem, 9vw, 2.8rem);
+    }
   }
 </style>

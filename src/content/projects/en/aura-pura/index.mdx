@@ -16,6 +16,13 @@ stack:
     - "MySQL"
   infra:
     - "Python Tkinter (Admin Desktop)"
+showcase:
+  layout: "aura"
+  heroVideo: "/projects/aurapura/videoFuncionamiento.mp4"
+  primaryImage: "/projects/aurapura/principal.png"
+  secondaryImage: "/projects/aurapura/perfume.png"
+  modalImage: "/projects/aurapura/model.png"
+cover: ../../../../assets/projects/aura-pura-cover.png
 featured: false
 draft: false
 description: "Artisanal perfume catalog web app with desktop admin. RESTful API, product modals, and modern visual effects."
@@ -33,3 +40,7 @@ The result is a web catalog built with Flask and Jinja2, with an interface that 
 ## Architecture
 
 Flask serves both the frontend — through Jinja2 templates — and the RESTful API consumed by the Tkinter admin application. Write endpoints are protected with basic authentication, sufficient for a single-administrator context. Product images are stored locally on the server and served as static files. The decision to use Flask as a monolith rather than splitting the frontend and API into separate projects was deliberate: it reduced deployment complexity to a single process and allowed fast iteration on the design without managing CORS or multiple services. Tkinter was chosen because the owner already used Windows and the admin tool required no additional dependencies beyond the executable bundled with PyInstaller.
+
+## Outcome
+
+Before this project, Aura Pura had no online presence beyond social media posts. The catalog gave the brand a permanent, searchable channel customers could browse at any hour without waiting for a reply. The owner went from depending on a developer for every product change to managing the full catalog independently from her Windows machine. Development and infrastructure costs were kept near zero by reusing Flask as both frontend host and API, and serving images as static files with no cloud storage dependency.

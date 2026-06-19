@@ -1,0 +1,88 @@
+---
+title: "Layered security for an internal admin panel"
+urlSlug: "en-layered-security-internal-panel"
+lang: "en"
+excerpt: "Internal tools get under-secured because they feel hidden. License Manager uses four independent layers to protect the same surface, each for a different reason."
+category: "backend"
+tags:
+  - "security"
+  - "dotnet"
+  - "devops"
+  - "architecture"
+  - "cloudflare"
+readingTime: 5
+publishedAt: 2025-04-18
+draft: false
+---
+
+Internal tools tend to accumulate security debt faster than public-facing products.
+
+The reasoning usually sounds like: nobody outside the team has the URL, the VPS is behind a firewall, and the users are trusted operators. That logic is understandable. It is also wrong in a specific way — it treats obscurity as a layer of defense.
+
+When I built **License Manager**, the internal admin panel for provisioning and managing licenses across two SaaS products, I made the decision early to treat it the same way I would treat any exposed service: with explicit, independent security layers, each designed for a different threat surface.
+
+This is what that looks like and why each layer matters.
+
+## Layer 1: Cloudflare Access (zero-trust)
+
+The first gate sits outside the server entirely.
+
+License Manager runs behind Cloudflare Access, which means any request to `admin.treecodes.net` must authenticate against an identity provider before the traffic even reaches Nginx. A valid session at the Cloudflare level is required just to get a TCP connection through to the application.
+
+This layer stops the largest class of attacks — automated scanners, credential stuffing bots, and opportunistic access attempts — before they ever touch code I control. If the application has a vulnerability, it is only reachable by someone who already passed Cloudflare's gate.
+
+Zero-trust here does not mean I assume the operator is malicious. It means I do not assume the network is safe.
+
+## Layer 2: IP whitelist at the application level
+
+The second gate is enforced by the application itself.
+
+Even if a request passes Cloudflare Access, an IP allowlist in `appsettings.json` rejects connections from addresses that are not explicitly authorized. This runs as ASP.NET middleware before any route handler executes.
+
+This layer exists because Cloudflare Access is a third-party service. If its configuration is misconfigured, compromised, or bypassed through a different DNS path, I do not want the application to be fully exposed. The IP whitelist is a secondary checkpoint that I control directly, with no external dependencies.
+
+Two independent gates from two different systems means a failure in one does not automatically become a breach.
+
+## Layer 3: BCrypt user authentication
+
+The third gate is standard credential verification — but implemented correctly.
+
+Every operator account has a username and a password hashed with BCrypt. Login is required to access any route inside the panel, even if the previous two layers have already been passed.
+
+BCrypt is not novel, but it matters here for a specific reason: License Manager stores encrypted database credentials for every client tenant. If authentication were weak or improperly implemented, passing this gate would give access not just to the UI but to the keys needed to decrypt those credentials. The strength of the hashing is proportional to the sensitivity of what is behind it.
+
+## Layer 4: Master password for sensitive data
+
+The fourth gate protects a specific subset of data within an already-authenticated session.
+
+Some views in License Manager display database credentials — host, user, and password — for each client tenant. These are stored encrypted using ASP.NET Data Protection (machine-level key, no external key service). But decryption does not happen automatically when a logged-in user views a record.
+
+A second factor — a master password — must be entered to reveal those values. A standard operator session never exposes them.
+
+This layer exists because authentication proves who you are, not what you need. A compromised session should not give unrestricted access to credentials for every client in the system.
+
+## Rate limiting and audit logging
+
+These are not additional gates, but they make the layers above more reliable in practice.
+
+After 5–10 consecutive failed login attempts, the originating IP is blocked for 30–60 minutes. This limits the practical value of credential guessing against Layer 3.
+
+Every action inside the panel — login attempts, credential reveals, device authorizations, license modifications — is written to an audit log with IP, operator, timestamp, and a partial identifier for the relevant entity. If something goes wrong, there is a trail.
+
+Without audit logging, the layers above only prevent access. With it, you also know when access was attempted and what happened.
+
+## What this is not
+
+This architecture is not excessive for the scale. License Manager is a small panel used by fewer than five operators.
+
+The point is not to match the security posture of a financial institution. The point is to make sure the system's behavior is predictable even when something unexpected happens: a misconfigured Cloudflare rule, a stolen session cookie, a compromised operator account.
+
+Internal tools fail at this because their builders assume the happy path holds. Layered security is not paranoia — it is acknowledging that the happy path is just one of many possible states.
+
+## A rule I now apply consistently
+
+If a tool controls infrastructure, credentials, or access rights for other systems, it is not an internal tool in any meaningful security sense. It is a control plane.
+
+Control planes deserve defense in depth regardless of how many people use them.
+
+The audience size does not change the attack surface. It only changes how many people know the URL.

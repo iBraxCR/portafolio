@@ -1,0 +1,81 @@
+---
+title: "Cuándo un monolito es la decisión correcta de producto"
+urlSlug: "es-cuando-un-monolito-es-la-decision-correcta"
+lang: "es"
+excerpt: "Aura Pura me recordó que la arquitectura debe responder primero a las restricciones del producto. A veces una sola app en Flask es la mejor decisión, aunque la stack se vea menos moderna."
+category: "process"
+tags:
+  - "monolito"
+  - "flask"
+  - "producto"
+  - "arquitectura"
+  - "small-business"
+readingTime: 4
+publishedAt: 2024-10-02
+draft: false
+---
+
+No todo producto se beneficia de separarse temprano.
+
+Suena obvio, pero es fácil olvidarlo cuando el desarrollo web moderno empuja constantemente hacia frontend separado, API separada, admin panel separado, workers e infraestructura por capas desde el día uno.
+
+Trabajar en **Aura Pura**, un catálogo de perfumería con un flujo administrativo liviano, me recordó que la arquitectura tiene que responder primero a las restricciones del negocio antes que a la tendencia.
+
+## El producto era pequeño, pero los requisitos eran reales
+
+Aura Pura necesitaba tres cosas:
+
+1. Un catálogo público con una presentación visual cuidada
+2. Una forma para que la dueña gestionara productos sin depender del desarrollador
+3. Costo de infraestructura mínimo y baja complejidad de despliegue
+
+Esas restricciones importan más que la idea abstracta de una "stack moderna".
+
+La dueña no necesitaba un ecosistema de servicios. Necesitaba un catálogo que se viera intencional, cargara bien y pudiera actualizarse sin fricción técnica.
+
+## Por qué el monolito era lo correcto
+
+La implementación usó Flask para servir tanto el sitio como la API consumida por una pequeña aplicación administrativa en Tkinter.
+
+Esa decisión eliminó varios costos de inmediato:
+
+- no hay despliegue separado para frontend
+- no hay capa de CORS que mantener
+- no hay modelo de autenticación duplicado
+- no hay coordinación entre múltiples repos o runtimes
+
+Una sola base de código controla templates, endpoints y reglas del negocio. Para un producto comercial pequeño, esa compresión no fue un compromiso. Fue una ventaja.
+
+## La simplicidad solo vale si sigue siendo explícita
+
+Llamar a algo monolito no lo vuelve automáticamente más simple. Solo se vuelve más simple si las fronteras internas siguen siendo legibles.
+
+Lo que hizo que el enfoque funcionara aquí fue mantener responsabilidades claras:
+
+- templates Jinja para el storefront
+- endpoints REST para la herramienta de administración
+- MySQL para los datos persistentes
+- manejo local de imágenes sin servicios externos de media
+
+El resultado fue un sistema fácil de desplegar, fácil de razonar y barato de mantener vivo.
+
+## El tradeoff importante
+
+¿Se pudo construir con un frontend en React, una API separada y storage cloud para assets? Sí.
+
+¿Eso habría mejorado el producto para esta clienta? No.
+
+Habría aumentado piezas móviles sin aumentar valor de negocio. Esa es la distinción que intento mantener ahora: la arquitectura debe reducir fricción alrededor del producto real, no sumar prestigio alrededor de la stack.
+
+## Una regla que reutilizo seguido
+
+Si un producto tiene:
+
+- un dominio claro
+- pocos operadores
+- tráfico moderado
+- alta sensibilidad a costo y mantenimiento
+
+entonces un monolito no es una vergüenza temporal. Puede ser la decisión correcta a largo plazo.
+
+Aura Pura fue útil para reforzarme algo fácil de olvidar: buena arquitectura no es la estructura más expandible sobre el papel. Es la estructura que mejor encaja con el problema que realmente tienes.

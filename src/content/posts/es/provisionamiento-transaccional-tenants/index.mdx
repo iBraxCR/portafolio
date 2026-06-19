@@ -1,0 +1,92 @@
+---
+title: "Provisionar tenants como una transacción, no como un script"
+urlSlug: "es-provisionamiento-transaccional-tenants"
+lang: "es"
+excerpt: "Crear bases de datos, usuarios, licencias y webhooks a mano no escala. Lo que me enseñó License Manager sobre tratar el provisioning SaaS como un flujo transaccional."
+category: "process"
+tags:
+  - "saas"
+  - "provisioning"
+  - "dotnet"
+  - "operaciones"
+  - "arquitectura"
+readingTime: 5
+publishedAt: 2025-04-11
+draft: false
+---
+
+La mayoría de equipos no perciben el provisioning como un problema de diseño hasta que empiezan a repetirlo suficientes veces.
+
+Eso me pasó con **License Manager**, el panel interno que construí para provisionar tanto Agenda IA como POS Tree Codes. Al inicio el proceso parecía manejable: crear una base de datos, importar un esquema, generar credenciales, registrar la licencia, producir el `.env`, entregarle los archivos al cliente. Ninguno de esos pasos era difícil por sí solo. El problema estaba en el espacio entre ellos.
+
+En el momento en que un flujo depende de varias acciones irreversibles, "solo correr un script" deja de ser un modelo serio de operación.
+
+## El problema real era la consistencia
+
+Provisionar un tenant no es una sola acción. Es una cadena:
+
+1. Crear la base de datos física
+2. Crear el usuario de base de datos y sus permisos
+3. Importar o sembrar el esquema
+4. Persistir la licencia en el sistema central
+5. Generar credenciales y artefactos de entrega
+6. Registrar valores específicos del producto como webhooks, planes o límites de dispositivos
+
+Si el paso 4 falla después de que el paso 3 ya se ejecutó, no tienes una request fallida. Tienes un tenant medio nacido.
+
+Ese estado es donde empieza la deuda operativa: bases de datos que nadie controla, credenciales que no deberían existir, licencias que no coinciden con la realidad y bugs de soporte que parecen aleatorios porque nacieron de un setup inconsistente.
+
+## La solución fue arquitectónica, no cosmética
+
+En License Manager dejé de pensar el provisioning como un formulario administrativo y empecé a tratarlo como un **flujo transaccional**.
+
+Eso significa que cada request de provisioning tiene tres reglas:
+
+1. Debe tener una secuencia clara y ordenada
+2. Cada paso debe saber qué creó
+3. Si un paso posterior falla, los anteriores deben poder revertirse
+
+En la práctica, eso cambió más la implementación que la interfaz.
+
+El operador sigue llenando un formulario. Pero internamente el sistema ahora ejecuta un pipeline controlado donde creación de base de datos, importación de esquema, generación de credenciales y persistencia de licencia se coordinan como una sola unidad de trabajo. Si algo falla, el rollback corre de inmediato: borra la base, elimina registros generados, descarta artefactos y deja el servidor como si el intento nunca hubiera existido.
+
+## Los flujos específicos por producto importan
+
+Algo que aprendí rápido: "tenant provisioning" es demasiado abstracto para ser útil si no modelas las diferencias entre productos.
+
+Agenda IA y POS Tree Codes crean tenants, pero no lo hacen igual.
+
+- **Agenda IA** necesita una base completa, planes sembrados, bootstrap del admin, registro en el índice central de tenants y preparación del webhook.
+- **POS Tree Codes** necesita generación de licencia, límites por dispositivo, reglas de autorización por hardware y archivos distintos de entrega.
+
+Intentar unificar ambos flujos en un solo motor genérico habría hecho el código más elegante en apariencia y peor en comportamiento.
+
+El mejor equilibrio fue una idea de orquestación compartida con **servicios de provisioning separados por producto**.
+
+## Por qué el rollback vale más que la velocidad
+
+El provisioning manual muchas veces se siente rápido porque el operador puede improvisar frente a errores. Pero esa velocidad es falsa. Solo traslada el costo a soporte, debugging y pérdida de confianza.
+
+El rollback te da algo más importante que velocidad: **predictibilidad**.
+
+El operador puede confiar en que solo existen dos resultados:
+
+- el tenant quedó completamente listo
+- no se creó nada
+
+Ese estado binario es lo que vuelve confiable a una herramienta interna.
+
+## Una regla práctica que ahora mantengo
+
+Si el onboarding de un cliente crea infraestructura, credenciales o registros irreversibles, no debería vivir para siempre como una secuencia suelta de scripts.
+
+Debería convertirse en una preocupación real de la aplicación, con:
+
+- orquestación explícita
+- pasos auditables
+- rutas de rollback
+- reglas conscientes del producto
+
+El provisioning es parte del producto, aunque solo lo vea el equipo interno.
+
+Ese fue el cambio de fondo detrás de License Manager: no era un panel para formularios. Era un intento de convertir fragilidad operativa en un sistema repetible.

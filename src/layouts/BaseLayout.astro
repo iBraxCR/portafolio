@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import AmbientBackdrop from '../components/AmbientBackdrop.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import SmoothScroll from '../components/SmoothScroll.astro';
@@ -29,6 +30,10 @@ const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&text=%E5%89%B5&display=swap" />
+
     <link rel="canonical" href={new URL(path, Astro.site).toString()} />
     <link rel="alternate" hreflang="es" href={new URL(path.replace(/^\/en\//, '/es/'), Astro.site).toString()} />
     <link rel="alternate" hreflang="en" href={new URL(path.replace(/^\/es\//, '/en/'), Astro.site).toString()} />
@@ -39,19 +44,27 @@ const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={new URL(path, Astro.site).toString()} />
     <meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'en_US'} />
+    <meta property="og:image" content={new URL('/og.png', Astro.site).toString()} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL('/og.png', Astro.site).toString()} />
+
   </head>
   <body>
-    <a href="#main" class="skip-link">Skip to content</a>
-    <Nav lang={lang} path={path} />
-    <main id="main">
-      <slot />
-    </main>
-    <Footer lang={lang} />
-    <BackToTop />
+    <AmbientBackdrop transition:persist="ambient-bg" />
+    <div class="site-shell">
+      <a href="#main" class="skip-link">Skip to content</a>
+      <Nav lang={lang} path={path} transition:persist />
+      <main id="main">
+        <slot />
+      </main>
+      <Footer lang={lang} transition:persist />
+      <BackToTop transition:persist />
+    </div>
     <SmoothScroll />
 
     <style is:global>

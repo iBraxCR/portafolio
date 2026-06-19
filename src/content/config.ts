@@ -17,6 +17,19 @@ const projects = defineCollection({
         backend: z.array(z.string()).optional(),
         infra: z.array(z.string()).optional(),
       }),
+      showcase: z
+        .object({
+          layout: z.enum(['agenda', 'pos', 'hub', 'aura', 'license']).optional(),
+          phoneVideo: z.string().optional(),
+          dashboardImage: z.string().optional(),
+          calendarVideo: z.string().optional(),
+          heroVideo: z.string().optional(),
+          primaryImage: z.string().optional(),
+          secondaryImage: z.string().optional(),
+          tertiaryImage: z.string().optional(),
+          modalImage: z.string().optional(),
+        })
+        .optional(),
       cover: image().optional(),
       coverHover: image().optional(),
       gallery: z.array(image()).optional(),

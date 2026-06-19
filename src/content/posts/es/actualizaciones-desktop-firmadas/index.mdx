@@ -1,0 +1,87 @@
+---
+title: "Las actualizaciones desktop necesitan confianza, no solo distribución"
+urlSlug: "es-actualizaciones-desktop-firmadas"
+lang: "es"
+excerpt: "TreeCodes Hub nació de una idea simple: mover instaladores es fácil, pero distribuir updates confiables exige firmas, control de ciclo de vida y una fuente central de verdad."
+category: "process"
+tags:
+  - "desktop"
+  - "updates"
+  - "java"
+  - "seguridad"
+  - "distribucion"
+readingTime: 4
+publishedAt: 2024-08-12
+draft: false
+---
+
+Distribuir software desktop parece simple hasta que necesitas hacerlo más de una vez.
+
+La primera versión puede salir por correo, por drive o por un link directo. La segunda también. Pero en el momento en que mantienes varias aplicaciones, varios clientes y varias versiones, "mandarles el instalador" se convierte en un patrón operativo débil.
+
+Esa fue la razón detrás de **TreeCodes Hub**.
+
+## El problema no es la descarga, es la autoridad
+
+La mayoría de sistemas de actualización fallan antes de la capa técnica porque no establecen una sola fuente de verdad.
+
+Cuando los clientes reciben binarios por distintos canales, pasan tres cosas:
+
+1. Nadie tiene total certeza de cuál es la versión vigente
+2. Instaladores viejos o modificados pueden circular como si fueran oficiales
+3. Soporte termina depurando entornos que nunca debieron existir
+
+El problema no es comodidad. Es confianza.
+
+## La pregunta correcta cambió la arquitectura
+
+En vez de preguntar "¿cómo enviamos updates?", la mejor pregunta fue:
+
+**¿Cómo garantizamos que solo aplicaciones reconocidas puedan instalarse y ejecutarse dentro del ecosistema?**
+
+Eso lleva a otro diseño.
+
+TreeCodes Hub funciona como un punto de control desktop. El cliente ve qué aplicaciones cubre su licencia, qué versión tiene instalada y si existe una nueva. Pero la parte importante está detrás de esa interfaz: cada artefacto distribuido por el hub se valida antes de ejecutarse.
+
+## Las firmas crean un límite de confianza
+
+La decisión más importante fue exigir que cada artefacto distribuido tenga una firma digital que el cliente verifique localmente.
+
+Si la firma no coincide con el certificado esperado por el sistema:
+
+- la instalación se detiene
+- el archivo se rechaza
+- el usuario ve que ese artefacto no es reconocido
+
+Eso cambia el rol del launcher. Ya no es solo una UI para updates. Se convierte en una frontera de confianza entre el ecosistema y cualquier cosa que venga de fuera.
+
+## El ciclo de vida importa tanto como el binario
+
+Otra lección: las actualizaciones no son solo archivos. Son parte de un ciclo de vida.
+
+El sistema tiene que responder:
+
+- qué aplicaciones puede usar ese cliente
+- cuál es la versión actualmente aprobada
+- qué ocurre cuando una licencia vence
+- cómo se deshabilita una instalación sin tocar la máquina manualmente
+
+Por eso Hub depende de una API central para metadatos de versión y estado de licencia. Una app desktop por sí sola no resuelve la distribución si no tiene un backend autoritativo que le diga qué debería existir.
+
+## Por qué esto importa incluso en ecosistemas pequeños
+
+Es fácil pensar que este nivel de control solo hace falta en empresas SaaS grandes. No creo que sea así.
+
+Mientras más pequeño es el ecosistema, más caro sale el caos. Un mal instalador, un binario sin verificar o un cliente desactualizado pueden generar más trabajo de soporte que construir bien el flujo de updates desde el inicio.
+
+La lección práctica de TreeCodes Hub es simple:
+
+Si tu producto distribuye software desktop, los updates no son solo un problema de empaquetado. Son un problema de confianza.
+
+Y la confianza necesita tres cosas:
+
+- una fuente central de verdad
+- verificación de artefactos
+- control explícito del ciclo de vida
+
+Sin eso, no estás administrando actualizaciones. Solo estás moviendo archivos.

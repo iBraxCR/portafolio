@@ -1,0 +1,56 @@
+---
+title: "License Manager"
+urlSlug: "es-license-manager"
+lang: "es"
+number: 5
+year: 2025
+role:
+  - "Arquitecto de Software"
+  - "Desarrollador Backend"
+category: "tool"
+stack:
+  frontend:
+    - "ASP.NET Core Razor Pages"
+  backend:
+    - "C# / .NET 9"
+    - "MediatR (CQRS)"
+    - "Dapper"
+    - "MySQL"
+  infra:
+    - "Nginx · Systemd · VPS Linux"
+    - "Cloudflare Access"
+showcase:
+  layout: "license"
+  primaryImage: "/projects/licenceManager/crearLicencia.png"
+  secondaryImage: "/projects/licenceManager/DatsoDeLicencia.png"
+  tertiaryImage: "/projects/licenceManager/planes.png"
+cover: ../../../../assets/projects/license-manager-cover.png
+featured: false
+draft: false
+description: "Panel de operaciones para Agenda IA y POS Tree Codes: provisiona tenants con bases de datos aisladas, licencias y autorización de dispositivos físicos."
+publishedAt: 2025-04-01
+---
+
+## El problema
+
+Cuando TreeCodes pasó a operar dos productos SaaS simultáneamente —Agenda IA y el POS Tree Codes— el onboarding de nuevos clientes requería ejecutar scripts manualmente en el servidor: crear la base de datos, importar el schema, generar credenciales, registrar la licencia y entregar los archivos al cliente. Cada producto tiene un flujo distinto: el POS necesita autenticar terminales físicos por hardware token y soporta hasta N dispositivos por licencia; Agenda IA provisiona un tenant completo con bot de WhatsApp, planes de suscripción y un admin web propio. Un único error en cualquier paso dejaba el estado del servidor inconsistente sin manera fácil de revertirlo.
+
+## La solución
+
+License Manager es un panel de administración interno en ASP.NET Core 9 + Razor Pages desplegado en el VPS de producción, protegido por Cloudflare Access (zero-trust) y una whitelist de IPs. Desde un formulario con dos pestañas —una por producto— el operador completa los datos del cliente y el sistema ejecuta el ciclo completo de provisioning correspondiente, con rollback automático si algo falla. Al finalizar, genera y descarga un ZIP con el archivo `.env` listo para entregar al cliente, incluyendo credenciales de base de datos cifradas, clave de licencia y URL de webhook. La seguridad opera en cuatro capas: Cloudflare Access, whitelist de IPs en `appsettings.json`, autenticación BCrypt por usuario, y una contraseña maestra separada para ver credenciales sensibles. Todos los accesos quedan registrados en un audit log con IP, operador y timestamp.
+
+## Arquitectura
+
+El proyecto sigue Clean Architecture en tres capas: `Core` define el dominio con la entidad `License` y los value objects `LicenseKey` (64 chars criptográficos) y `DatabaseName`; `Infrastructure` implementa repositorios con Dapper y dos servicios de provisioning independientes; `Web` expone la UI en Razor Pages más una API REST con Swagger.
+
+Los dos productos siguen rutas distintas dentro del mismo sistema:
+
+**POS Tree Codes** — el comando `CreateLicenseCommand` pasa por MediatR hasta `CreateLicenseCommandHandler`, que genera el nombre de BD (`pos_slug_xxxxxxxx`), invoca `TenantCreatorService` para crear el tenant físico en MySQL, cifra la contraseña generada con ASP.NET Data Protection (protección a nivel de máquina) y persiste la licencia en la base central `pos_general`. El operador puede subir el logo del negocio en el formulario —se almacena en base64 en el registro— y configurar `MaxDevices` y host de base de datos remoto.
+
+**Agenda IA** — `AgenteIAProvisionService` maneja el ciclo completo: crea la BD `agente_slug_xxxxxxxx` con charset `utf8mb4`, importa el schema completo via un parser SQL propio con soporte para bloques `DELIMITER`, crea el usuario MySQL con permisos aislados, siembra las tablas de planes (basic / professional / business / enterprise) y la suscripción trial, registra el usuario admin con BCrypt, actualiza el índice central de tenants en `maestra_db` para el ruteo de login multi-tenant y genera la URL de webhook de WhatsApp.
+
+**Autorización de dispositivos** — Los terminales POS (aplicaciones Java de escritorio) envían solicitudes de activación con su hardware token. El panel muestra dispositivos pendientes y autorizados, y permite aprobar, rechazar o revocar acceso con un clic. Cada acción escribe un evento en `IAuditService` con IP, operador y token parcial para trazabilidad completa. Un rate limiter bloquea IPs tras 5–10 intentos fallidos durante 30–60 minutos.
+
+## Resultado
+
+License Manager convirtió el onboarding de clientes de un proceso manual de varias horas —ejecutar scripts en el servidor, importar schemas, crear usuarios, configurar credenciales— en un formulario que se completa en menos de un minuto con rollback automático si algo falla. Un solo operador gestiona ahora toda la base de clientes de dos productos SaaS desde un único panel. El modelo de seguridad por capas protege el plano de control aunque una capa individual falle, y el audit log da trazabilidad completa de cada acción ejecutada.

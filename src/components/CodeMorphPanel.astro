@@ -1,0 +1,351 @@
+---
+import type { Locale } from '../lib/i18n';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+
+const snippets = [
+  `const order = cart.checkout();
+const payment = await processPayment(order.total);
+if (payment.ok) {
+  printReceipt(order);
+  syncInventory(order.items);
+}`,
+  `const site = await build({
+  mode: 'production',
+  optimize: true,
+});
+await deploy(site.dist, config.host);
+notify('site updated');`,
+  `if (message) {
+  const slot = await scheduler.reserve(customer);
+  await reply(customer, slot.confirmation);
+}`,
+];
+
+const copy = {
+  es: {
+    label: 'pipeline / producto',
+    caption: 'Webs, POS y lanzamientos — de frágil a producción.',
+  },
+  en: {
+    label: 'pipeline / product',
+    caption: 'Webs, POS and launches — from fragile to production-ready.',
+  },
+}[lang];
+---
+
+<div class="code-morph" data-code-morph data-snippets={JSON.stringify(snippets)}>
+  <div class="code-morph__chrome">
+    <div class="code-morph__dots" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <p class="code-morph__label">{copy.label}</p>
+  </div>
+
+  <div class="code-morph__frame">
+    <div class="code-morph__container" data-code-container>
+      <pre class="code-panel code-panel--primary" data-code-panel="0">
+<code>{snippets[0]}</code>
+      </pre>
+      <pre class="code-panel code-panel--secondary" data-code-panel="1">
+<code>{snippets[1]}</code>
+      </pre>
+    </div>
+  </div>
+
+  <p class="code-morph__caption">{copy.caption}</p>
+</div>
+
+<style>
+  .code-morph {
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    background:
+      radial-gradient(circle at top left, rgba(232, 227, 216, 0.08), transparent 30%),
+      linear-gradient(180deg, #151515 0%, #090909 100%);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
+    overflow: hidden;
+  }
+
+  .code-morph__chrome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .code-morph__dots {
+    display: inline-flex;
+    gap: 0.45rem;
+  }
+
+  .code-morph__dots span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .code-morph__dots span:first-child {
+    background: rgba(255, 130, 105, 0.55);
+  }
+
+  .code-morph__dots span:nth-child(2) {
+    background: rgba(255, 216, 120, 0.5);
+  }
+
+  .code-morph__dots span:nth-child(3) {
+    background: rgba(185, 235, 170, 0.5);
+  }
+
+  .code-morph__label,
+  .code-morph__caption {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    letter-spacing: 0.04em;
+  }
+
+  .code-morph__label {
+    color: var(--fg-subtle);
+    text-transform: uppercase;
+  }
+
+  .code-morph__caption {
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+
+  .code-morph__frame {
+    position: relative;
+    min-height: 0;
+    padding: 0.5rem 0;
+  }
+
+  .code-morph__container {
+    position: relative;
+    min-height: 100%;
+    will-change: height;
+  }
+
+  .code-panel {
+    margin: 0;
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: clamp(0.85rem, 1.2vw, 1rem);
+    line-height: 1.85;
+    white-space: pre-wrap;
+    color: var(--fg);
+  }
+
+  .code-morph__container .code-panel--primary,
+  .code-morph__container.is-alternate .code-panel--secondary {
+    position: relative;
+    top: 0;
+    left: 0;
+  }
+
+  .code-morph__container .code-panel--secondary,
+  .code-morph__container.is-alternate .code-panel--primary {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .code-morph__container .code-panel--secondary {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .code-morph__container.is-alternate .code-panel--secondary,
+  .code-morph__container.is-layout-ready .code-panel--primary,
+  .code-morph__container.is-layout-ready .code-panel--secondary {
+    opacity: 1;
+  }
+
+  .code-panel code {
+    display: block;
+  }
+
+  .code-morph__container.is-layout-ready .code-panel--primary :global(.tok),
+  .code-morph__container.is-layout-ready.is-alternate .code-panel--secondary :global(.tok) {
+    display: inline-block;
+    will-change: transform, opacity;
+  }
+
+  .code-morph__container.is-layout-ready .code-panel--secondary :global(.tok),
+  .code-morph__container.is-layout-ready.is-alternate .code-panel--primary :global(.tok) {
+    display: none;
+  }
+
+  .code-panel :global(.tok-kw) {
+    color: #e7d0a7;
+  }
+
+  .code-panel :global(.tok-str) {
+    color: #e38d72;
+  }
+
+  .code-panel :global(.tok-fn) {
+    color: #f0f0ee;
+  }
+
+  .code-panel :global(.tok-var) {
+    color: #c1c8ff;
+  }
+
+  .code-panel :global(.tok-op) {
+    color: #8b8b8b;
+  }
+
+  @media (max-width: 639px) {
+    .code-morph {
+      padding: 0.85rem;
+    }
+
+    .code-panel {
+      font-size: 0.78rem;
+      line-height: 1.75;
+    }
+  }
+</style>
+
+<script>
+  import { createLayout, random, stagger } from 'animejs';
+
+  const keywordSet = /^(const|let|var|function|return|if|else|for|while|new|this|true|false|null|undefined|async|await|import|export|from|class|extends)$/;
+  const tokenRegex = /(['"`])(?:\\.|[^\\])*?\1|[a-zA-Z_$][a-zA-Z0-9_$]*|\s+|[^a-zA-Z_$'"`\s]+/g;
+
+  function initAll() {
+    document.querySelectorAll<HTMLElement>('[data-code-morph]').forEach((root) => {
+      if (root.dataset.morphReady === 'true') return;
+      root.dataset.morphReady = 'true';
+      initCodeMorph(root);
+    });
+  }
+
+  initAll();
+  document.addEventListener('astro:page-load', initAll);
+
+  function initCodeMorph(root: HTMLElement) {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const container = root.querySelector<HTMLElement>('[data-code-container]');
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-code-panel]'));
+    const allSnippets: string[] = JSON.parse(root.dataset.snippets || '[]');
+
+    if (!container || panels.length < 2) return;
+
+    panels.forEach((panel) => {
+      const code = panel.querySelector('code');
+      if (code) highlightCode(code);
+    });
+
+    if (prefersReduced) return;
+
+    const fontsReady = 'fonts' in document ? document.fonts.ready : Promise.resolve();
+
+    fontsReady.then(() => {
+      startLayout();
+    });
+
+    function startLayout() {
+      try {
+        container.classList.add('is-layout-ready');
+
+        let showingIndex = 0;
+
+        const layout = createLayout(container, {
+          loop: true,
+          alternate: true,
+          loopDelay: 3000,
+          duration: 1200,
+          delay: 150,
+          ease: 'inOutExpo',
+          enterFrom: {
+            opacity: 0,
+            duration: 1250,
+            delay: 100,
+          },
+          leaveTo: {
+            opacity: 0,
+            transform: () =>
+              `translate(${random(-50, 50)}px, ${random(-200, 200)}px) rotate(${random(-30, 30)}deg)`,
+            duration: 750,
+            delay: stagger([0, 200], { from: 'random' }),
+            ease: 'out(3)',
+          },
+        });
+
+        layout.update(({ root: layoutRoot }) => {
+          if (!(layoutRoot instanceof HTMLElement)) return;
+
+          const nextIndex = (showingIndex + 1) % allSnippets.length;
+          const isAlternate = layoutRoot.classList.contains('is-alternate');
+          const hiddenPanel = isAlternate ? panels[0] : panels[1];
+          const codeEl = hiddenPanel.querySelector<HTMLElement>('code');
+          if (codeEl && allSnippets[nextIndex] !== undefined) {
+            codeEl.textContent = allSnippets[nextIndex];
+            highlightCode(codeEl);
+          }
+
+          layoutRoot.classList.toggle('is-alternate');
+          showingIndex = nextIndex;
+        });
+      } catch (_error) {
+        container.classList.remove('is-layout-ready');
+        root.style.opacity = '1';
+        root.style.visibility = 'visible';
+        root.style.transform = 'none';
+      }
+    }
+  }
+
+  function highlightCode(el: HTMLElement) {
+    const code = el.textContent ?? '';
+    const tokens = code.match(tokenRegex) || [];
+    const counts: Record<string, number> = {};
+    let html = '';
+
+    for (let i = 0; i < tokens.length; i += 1) {
+      const token = tokens[i];
+      if (/^\s+$/.test(token)) {
+        html += token;
+        continue;
+      }
+
+      counts[token] = (counts[token] || 0) + 1;
+      const dataAttr = `data-layout-id="${token}-${counts[token]}"`;
+
+      if (/^['"`]/.test(token)) {
+        html += `<span class="tok tok-str" ${dataAttr}>${escapeHtml(token)}</span>`;
+      } else if (/^[a-zA-Z_$]/.test(token)) {
+        const rest = tokens.slice(i + 1).join('').trimStart();
+        const isFunction = rest.startsWith('(');
+        const cls = keywordSet.test(token) ? 'tok-kw' : isFunction ? 'tok-fn' : 'tok-var';
+        html += `<span class="tok ${cls}" ${dataAttr}>${escapeHtml(token)}</span>`;
+      } else {
+        html += `<span class="tok tok-op" ${dataAttr}>${escapeHtml(token)}</span>`;
+      }
+    }
+
+    el.innerHTML = html;
+  }
+
+  function escapeHtml(value: string) {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+</script>

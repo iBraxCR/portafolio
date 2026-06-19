@@ -1,0 +1,93 @@
+---
+title: "Redis as a webhook buffer: what I learned building Agenda IA"
+urlSlug: "en-redis-webhooks-whatsapp"
+lang: "en"
+excerpt: "WhatsApp sends webhooks in bursts and doesn't wait. How I used Redis as an intermediate queue to avoid dropping messages and keep response times under 3 seconds."
+category: "backend"
+tags:
+  - "redis"
+  - "webhooks"
+  - "whatsapp"
+  - "node"
+  - "architecture"
+readingTime: 5
+publishedAt: 2025-03-18
+draft: false
+---
+
+When I started building Agenda IA — a WhatsApp scheduling bot that uses Claude AI to understand natural language — I assumed the hard part would be the AI integration. It wasn't. The hard part was guaranteeing that no WhatsApp message would ever be dropped under load, and that the bot would always respond in under three seconds.
+
+The problem wasn't new: any system that receives webhooks has to deal with the same tension. But WhatsApp makes it sharper.
+
+## Why WhatsApp webhooks are different
+
+The WhatsApp Cloud API fires webhooks in real time for every event: message received, message delivered, message read, status updated. If your endpoint takes more than 20 seconds to respond, WhatsApp assumes you failed and retries. If it retries enough times without success, it can deactivate the webhook altogether.
+
+The real problem isn't the timeout. It's that processing a single message involves:
+
+1. Parsing the payload and extracting intent with Claude AI (200–800ms)
+2. Querying availability in Google Calendar (100–300ms)
+3. Writing to MySQL and emitting a Socket.IO event to the admin dashboard
+4. Responding to the customer on WhatsApp with a confirmation
+
+Total: 500ms–1.2s under ideal conditions. But with multiple messages arriving simultaneously from different tenants, that compounds. And when the Claude API hits a latency spike, you're looking at 2–3s easily.
+
+The webhook response to WhatsApp has to be immediate. Processing can take whatever time it needs — but the `200 OK` has to go out in milliseconds.
+
+## The solution: decouple reception from processing
+
+The pattern is classic but effective: the webhook endpoint does exactly one thing — pushes the payload to Redis — and immediately responds `200 OK`. A separate worker consumes the queue and runs all the processing.
+
+```javascript
+// webhook handler (Express)
+app.post('/webhook/whatsapp', async (req, res) => {
+  const payload = JSON.stringify(req.body);
+  await redis.lpush('whatsapp:incoming', payload);
+  res.sendStatus(200);
+});
+```
+
+```javascript
+// worker (separate process)
+async function processLoop() {
+  while (true) {
+    const [, raw] = await redis.brpop('whatsapp:incoming', 0);
+    const payload = JSON.parse(raw);
+    await handleMessage(payload);
+  }
+}
+```
+
+`BRPOP` blocks until something is available in the list. It's not an active poll, it doesn't burn CPU. The worker processes one message at a time per tenant, which eliminates race conditions on the calendar.
+
+## Multi-tenant: one queue per business
+
+The first design used a single global queue. It worked, but had a problem: if one business received a burst of messages — say, a Monday morning when everyone is calling to confirm appointments — it blocked processing for all other tenants.
+
+The fix was a queue per tenant, generated dynamically:
+
+```javascript
+// push
+const queueKey = `whatsapp:incoming:${tenantId}`;
+await redis.lpush(queueKey, payload);
+
+// dispatcher: discovers and distributes active queues
+const keys = await redis.keys('whatsapp:incoming:*');
+await Promise.all(keys.map(processQueue));
+```
+
+Each tenant processes at its own pace. A high-volume business doesn't affect anyone else.
+
+## What I didn't do and why
+
+I considered BullMQ — the most popular queue library on top of Redis for Node — but ruled it out. BullMQ adds automatic retries, priorities, scheduled jobs, a monitoring UI... all useful, but my case was simpler: ordered messages, one worker per tenant, no complex retry logic (WhatsApp already retries on its own if it doesn't receive the 200).
+
+The rule I now use: if the processing flow fits in your head, bare Redis is enough. When you need job visibility, per-step configurable retries, or rate limiting per job type, that's when BullMQ earns its complexity.
+
+## Result
+
+With this architecture, the webhook responds in under 5ms. Full processing — including AI — takes between 800ms and 2.5s depending on Claude and Calendar API load. The bot confirms appointments in under 3 seconds 95% of the time.
+
+The part that surprised me most: Redis as a queue requires almost no infrastructure. In production it runs on the same instance as the backend with 64MB of RAM allocated. At the current scale — tens of businesses, not thousands — that's more than enough.
+
+The truth is that most architecture problems at this scale don't need more complex tools. They need cleaner separation of responsibilities.

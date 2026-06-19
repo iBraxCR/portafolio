@@ -55,9 +55,11 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(160deg, #3a3a3a, #111);
+    background: linear-gradient(160deg, rgba(58, 55, 50, 0.94), rgba(14, 14, 14, 0.96));
     border-radius: 50%;
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+    box-shadow:
+      inset 0 1px 2px rgba(255, 255, 255, 0.16),
+      0 10px 24px rgba(0, 0, 0, 0.25);
   }
 
   .btt-outline {
@@ -76,7 +78,7 @@
     inset: 0;
     padding: 1.5px;
     border-radius: 50%;
-    background: conic-gradient(from 180deg, #555, #888, #333, #888, #555);
+    background: conic-gradient(from 180deg, #716a61, #d8ccbb, #4e4a44, #d8ccbb, #716a61);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -84,13 +86,13 @@
   }
 
   .back-to-top:hover .btt-outline::before {
-    background: conic-gradient(from 180deg, #aaa, #fff, #888, #fff, #aaa);
+    background: conic-gradient(from 180deg, #c4b8a7, #fff7ea, #918779, #fff7ea, #c4b8a7);
   }
 
   .btt-icon {
     width: 20px;
     height: 20px;
-    fill: rgba(255, 255, 255, 0.7);
+    fill: rgba(255, 245, 232, 0.86);
     transform: rotate(-45deg);
     position: relative;
     z-index: 3;
@@ -102,9 +104,34 @@
   }
 </style>
 
-<!-- Lógica show/hide y scroll-to-top (Vite bundle normal) -->
 <script>
+  import { liquidMetalFragmentShader, ShaderMount } from '@paper-design/shaders';
+
   const btn = document.getElementById('back-to-top');
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!prefersReduced) {
+    try {
+      const container = document.getElementById('btt-metal');
+      if (container) {
+        new ShaderMount(container, liquidMetalFragmentShader, {
+          u_repetition: 1.5,
+          u_softness:   0.5,
+          u_shiftRed:   0.3,
+          u_shiftBlue:  0.3,
+          u_distortion: 0,
+          u_contour:    0,
+          u_angle:      100,
+          u_scale:      1.5,
+          u_shape:      1,
+          u_offsetX:    0.1,
+          u_offsetY:   -0.1,
+        }, undefined, 0.6);
+      }
+    } catch (_e) {
+      // CSS fallback
+    }
+  }
 
   window.addEventListener('scroll', () => {
     if (window.scrollY > 300) {
@@ -122,33 +149,4 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
-</script>
-
-<!-- Shader liquid metal (CDN aislado — no afecta el bundle principal) -->
-<script is:inline type="module">
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    try {
-      const { liquidMetalFragmentShader, ShaderMount } = await import(
-        'https://esm.sh/@paper-design/shaders'
-      );
-      const container = document.getElementById('btt-metal');
-      if (container && ShaderMount) {
-        new ShaderMount(container, liquidMetalFragmentShader, {
-          u_repetition: 1.5,
-          u_softness:   0.5,
-          u_shiftRed:   0.3,
-          u_shiftBlue:  0.3,
-          u_distortion: 0,
-          u_contour:    0,
-          u_angle:      100,
-          u_scale:      1.5,
-          u_shape:      1,
-          u_offsetX:    0.1,
-          u_offsetY:   -0.1,
-        }, undefined, 0.6);
-      }
-    } catch (e) {
-      // Shader falla silenciosamente — el botón sigue funcional con CSS fallback
-    }
-  }
 </script>

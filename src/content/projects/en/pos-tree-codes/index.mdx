@@ -16,13 +16,15 @@ stack:
     - "MySQL 8"
   infra:
     - "DGT API (Facturación Electrónica CR)"
+showcase:
+  layout: "pos"
+  heroVideo: "/projects/pos-tree-codes/interface.mp4"
+  primaryImage: "/projects/pos-tree-codes/mockup.webp"
+  secondaryImage: "/projects/pos-tree-codes/reports.webp"
 cover: ../../../../assets/projects/pos-tree-codes-cover.png
 coverHover: ../../../../assets/projects/pos-tree-codes-hover.png
 gallery:
-  - ../../../../assets/projects/pos-tree-codes-gallery-1.png
-  - ../../../../assets/projects/pos-tree-codes-gallery-2.png
   - ../../../../assets/projects/pos-tree-codes-gallery-3.png
-  - ../../../../assets/projects/pos-tree-codes-gallery-4.png
 featured: true
 draft: false
 description: "Hybrid enterprise POS suite with certified electronic invoicing for Costa Rica. Java desktop + WebPOS + REST API."
@@ -40,3 +42,30 @@ POS Tree Codes is a three-layer hybrid suite. The primary application is a Java 
 ## Architecture
 
 The database has 57 tables covering everything from the product catalog and tiered pricing to the electronic document history and communication logs with the tax authority. The electronic invoicing module handles XML generation according to the official XSD schema, digital signing with a PKCS#12 certificate, and asynchronous submission to the DGT API with automatic retries on connectivity failures. The Swing client contains over 250 Java classes organized into presentation, service, and repository layers, and is distributed as a native Windows executable with an installer. Authentication between the WebPOS and the API uses JWT with token rotation, while the desktop client maintains an encrypted persistent session stored locally.
+
+## System shape
+
+The project had to behave like one product across three very different surfaces:
+
+- a **desktop POS** for the main checkout workflow
+- a lighter **WebPOS** for auxiliary sales points
+- a central **REST API** that holds the business rules and tax integration
+
+That split was intentional. The cashier desk needed speed, keyboard-heavy workflows and local continuity. Secondary points needed lighter access from the browser. The API became the shared operational core so pricing, inventory and invoicing logic would not drift between clients.
+
+## Why this was more than a billing feature
+
+Electronic invoicing sounds like a compliance checkbox, but in practice it touches almost every part of the system:
+
+1. the sale cannot close without valid tax data
+2. the XML must match the official schema exactly
+3. signatures must be valid and traceable
+4. connectivity failures cannot block the business permanently
+
+That means the invoicing module is not an add-on. It defines the reliability standard for the whole product.
+
+## Outcome
+
+The final result is a suite that feels grounded in local operational reality instead of adapted from a generic foreign template. The desktop app handles the heavy daily workflow, the WebPOS extends the system to additional stations, and the backend turns Costa Rican compliance into a repeatable process rather than a fragile manual ritual.
+
+What makes the project valuable is not just that it issues invoices. It is that it connects sales, inventory, authentication and tax communication into a coherent system businesses can actually run on top of.

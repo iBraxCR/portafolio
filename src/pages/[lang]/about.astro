@@ -1,6 +1,45 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { t, locales, isLocale, type Locale } from '../../lib/i18n';
+import CodeMorphPanel from '../../components/CodeMorphPanel.astro';
+import Meta from '../../components/Meta.astro';
+import { locales, isLocale, type Locale } from '../../lib/i18n';
+
+const techLogos: Record<string, string> = {
+  'React':                '/tech/react.webp',
+  'Next.js':              '/tech/nextjs.webp',
+  'Astro':                '/tech/astro.webp',
+  'TypeScript':           '/tech/typescript.webp',
+  'Tailwind CSS':         '/tech/tailwindcss.svg',
+  'Vite':                 '/tech/vitejs.webp',
+  'Node.js':              '/tech/nodejs.webp',
+  'Express':              '/tech/express.svg',
+  'Spring Boot':          '/tech/springboot.svg',
+  'MySQL':                '/tech/logoMysql.webp',
+  'MySQL 8':              '/tech/logoMysql.webp',
+  'Redis':                '/tech/redis.svg',
+  'Socket.IO':            '/tech/socketio-system.svg',
+  'Figma prototyping':    '/tech/figma.svg',
+  'Prototipado en Figma': '/tech/figma.svg',
+  'Claude AI':            '/tech/claude.svg',
+  'WhatsApp APIs':        '/tech/whatsapp.svg',
+  'Google Calendar API':  '/tech/googlecalendar.svg',
+  'Python':               '/tech/python.webp',
+  'Docker':               '/tech/docker.svg',
+  'Git':                  '/tech/git.webp',
+  'JavaScript':           '/tech/javascript.webp',
+  'Java':                 '/tech/java.svg',
+  'MongoDB':              '/tech/mongodb.webp',
+  'C#':                   '/tech/logoNet.png',
+  '.NET':                 '/tech/logoNet.png',
+  'ASP.NET':              '/tech/logoNet.png',
+  'Arquitectura UI':      '/tech/ui-architecture.svg',
+  'UI architecture':      '/tech/ui-architecture.svg',
+  'Design systems':       '/tech/design-systems.svg',
+  'Flujos SaaS':          '/tech/saas-flows.svg',
+  'SaaS flows':           '/tech/saas-flows.svg',
+  'REST APIs':            '/tech/rest-apis.svg',
+  'Deployments':          '/tech/deployments.svg',
+};
 
 export function getStaticPaths() {
   return locales.map((lang) => ({ params: { lang } }));
@@ -9,34 +48,749 @@ export function getStaticPaths() {
 const { lang: rawLang } = Astro.params;
 if (!isLocale(rawLang)) throw new Error(`Invalid locale: ${rawLang}`);
 const lang: Locale = rawLang;
+
+const copy = {
+  es: {
+    title: 'Sobre mí',
+    desc: 'Sobre Joschua Barahona — desarrollador fullstack.',
+    heroLabel: '06 / Sobre mí',
+    heroMeta: ['desarrollador fullstack', 'Costa Rica', '2021—hoy'],
+    heading: ['Construyo', 'software útil', 'con sensibilidad visual.'],
+    intro:
+      'Trabajo entre producto, interfaz y sistemas. Me interesa que una herramienta no solo funcione: también tiene que verse clara, sentirse bien usada y sobrevivir al paso a producción.',
+    note:
+      'Mi enfoque mezcla criterio visual, ejecución técnica y entendimiento de operación real. No diseño pantallas aisladas; diseño comportamiento, estructura y continuidad.',
+    cta: 'Escribir por correo',
+    cvCta: 'Descargar CV',
+    email: 'joschuabarahona15@gmail.com',
+    principlesLabel: '02 / Principios',
+    principlesIntro:
+      'Busco que cada proyecto tenga una idea visible detrás: jerarquía clara, fricción útil y decisiones que se sostengan fuera del mockup.',
+    principles: [
+      {
+        index: '01',
+        title: 'Claridad primero',
+        text: 'La interfaz debe explicar el sistema sin saturarlo. Si todo compite por atención, nada guía.',
+      },
+      {
+        index: '02',
+        title: 'Diseño con operación',
+        text: 'Pienso componentes, estados y flujos considerando el uso diario, los errores y el mantenimiento.',
+      },
+      {
+        index: '03',
+        title: 'Código con intención',
+        text: 'Implemento para que el producto conserve su tono y su lógica cuando pasa del concepto al entorno real.',
+      },
+    ],
+    stackLabel: '03 / Stack & herramientas',
+    stackIntro:
+      'Estas son las piezas que más uso hoy, organizadas por responsabilidad en lugar de por moda.',
+    stackGroups: [
+      {
+        title: 'Frontend',
+        items: ['React', 'Astro', 'TypeScript', 'Tailwind CSS', 'Vite'],
+      },
+      {
+        title: 'Backend',
+        items: ['Node.js', 'Express', 'Spring Boot', 'Java', 'C#', '.NET', 'MySQL', 'Redis', 'REST APIs'],
+      },
+      {
+        title: 'Producto',
+        items: ['Arquitectura UI', 'Design systems', 'Flujos SaaS', 'Prototipado en Figma'],
+      },
+      {
+        title: 'Automatización',
+        items: ['Claude AI', 'WhatsApp APIs', 'Google Calendar API', 'Docker', 'Deployments'],
+      },
+    ],
+    careerLabel: '04 / Carrera',
+    careerIntro:
+      'Mi experiencia reciente se ha movido entre software a medida, producto interno y automatización aplicada a operaciones reales.',
+    timeline: [
+      {
+        year: '2021',
+        role: 'Desarrollador Fullstack',
+        company: 'TreeCodes',
+        desc: 'Lancé productos SaaS a producción con arquitecturas multi-tenant, REST APIs y paneles React usados por clientes reales de forma cotidiana.',
+      },
+      {
+        year: '2023',
+        role: 'Desarrollador de Producto',
+        company: 'TreeCodes',
+        desc: 'Diseñé un POS completo —250+ clases Java, 57 tablas— que cumple la normativa DGT CR y opera en negocios locales todos los días.',
+      },
+      {
+        year: '2025—Hoy',
+        role: 'IA & Fullstack',
+        company: 'TreeCodes',
+        desc: 'Construí agendamiento 24/7 por WhatsApp y un panel de operaciones que redujo el onboarding de clientes de horas de trabajo manual a un formulario con rollback automático.',
+      },
+    ],
+  },
+  en: {
+    title: 'About',
+    desc: 'About Joschua Barahona — fullstack developer.',
+    heroLabel: '06 / About',
+    heroMeta: ['fullstack developer', 'Costa Rica', '2021—now'],
+    heading: ['I build', 'useful software', 'with visual judgment.'],
+    intro:
+      'I work across product, interface and systems. A tool should not only function well: it also needs to read clearly, feel intentional and survive the move into production.',
+    note:
+      'My approach mixes visual judgment, technical execution and real operational context. I do not design isolated screens; I design behavior, structure and continuity.',
+    cta: 'Write by email',
+    cvCta: 'Download CV',
+    email: 'joschuabarahona15@gmail.com',
+    principlesLabel: '02 / Principles',
+    principlesIntro:
+      'I want each project to show a visible idea behind it: clear hierarchy, useful friction and decisions that still hold once the mockup is gone.',
+    principles: [
+      {
+        index: '01',
+        title: 'Clarity first',
+        text: 'The interface should explain the system without overloading it. If everything fights for attention, nothing guides.',
+      },
+      {
+        index: '02',
+        title: 'Design for operations',
+        text: 'I think in components, states and flows with day-to-day use, failure cases and maintenance in mind.',
+      },
+      {
+        index: '03',
+        title: 'Code with intent',
+        text: 'I implement so the product keeps its tone and logic when it moves from concept to production reality.',
+      },
+    ],
+    stackLabel: '03 / Stack & tools',
+    stackIntro:
+      'These are the tools I rely on most right now, organized by responsibility instead of trend.',
+    stackGroups: [
+      {
+        title: 'Frontend',
+        items: ['React', 'Astro', 'TypeScript', 'Tailwind CSS', 'Vite'],
+      },
+      {
+        title: 'Backend',
+        items: ['Node.js', 'Express', 'Spring Boot', 'Java', 'C#', '.NET', 'MySQL', 'Redis', 'REST APIs'],
+      },
+      {
+        title: 'Product',
+        items: ['UI architecture', 'Design systems', 'SaaS flows', 'Figma prototyping'],
+      },
+      {
+        title: 'Automation',
+        items: ['Claude AI', 'WhatsApp APIs', 'Google Calendar API', 'Docker', 'Deployments'],
+      },
+    ],
+    careerLabel: '04 / Career',
+    careerIntro:
+      'My recent work has moved between custom software, internal product and automation applied to real operational workflows.',
+    timeline: [
+      {
+        year: '2021',
+        role: 'Fullstack Developer',
+        company: 'TreeCodes',
+        desc: 'Shipped production SaaS products with multi-tenant architectures, REST APIs and React interfaces used by real clients daily.',
+      },
+      {
+        year: '2023',
+        role: 'Product Developer',
+        company: 'TreeCodes',
+        desc: 'Designed a full POS suite — 250+ Java classes, 57 DB tables — compliant with Costa Rican e-invoicing law, running in local businesses daily.',
+      },
+      {
+        year: '2025—Now',
+        role: 'AI & Fullstack',
+        company: 'TreeCodes',
+        desc: 'Built 24/7 WhatsApp scheduling automation and an ops panel that reduced client onboarding from hours of manual server work to a single form with automatic rollback.',
+      },
+    ],
+  },
+}[lang];
 ---
 
-<BaseLayout
-  title={t('nav.about', lang)}
-  description={lang === 'es' ? 'Sobre Joschua Barahona.' : 'About Joschua Barahona.'}
-  lang={lang}
->
-  <section class="page">
-    <h1>{t('nav.about', lang)}</h1>
-    <p>Coming soon.</p>
+<BaseLayout title={copy.title} description={copy.desc} lang={lang}>
+  <section class="hero" data-page-hero>
+    <div class="section-head">
+      <p class="section-kicker" data-hero-kicker>{copy.heroLabel}</p>
+      <Meta items={copy.heroMeta} class="hero-meta" data-hero-meta />
+    </div>
+
+    <div class="hero-grid">
+      <div class="hero-stage">
+        <CodeMorphPanel lang={lang} />
+      </div>
+
+      <div class="hero-copy">
+        <div class="hero-avatar" aria-hidden="true">
+          <img src="/yo.png" alt="" width="448" height="448" class="avatar-img" />
+        </div>
+
+        <h1>
+          {copy.heading.map((line, index) => (
+            <span class="line-mask" data-hero-line-mask>
+              <span class:list={['line-text', { 'is-accent': index === copy.heading.length - 1 }]} data-hero-line>
+                {line}
+              </span>
+            </span>
+          ))}
+        </h1>
+
+        <p class="hero-intro" data-hero-copy>{copy.intro}</p>
+        <p class="hero-note" data-hero-copy>{copy.note}</p>
+
+        <div class="hero-actions" data-hero-copy>
+          <a href={`mailto:${copy.email}`} class="hero-action">
+            {copy.cta}
+          </a>
+          <a href={`/cv/CV_${lang.toUpperCase()}.pdf`} class="hero-action hero-action--outline" download>
+            {copy.cvCta}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="principles">
+    <div class="section-head">
+      <p class="section-kicker" data-reveal="fade-up">{copy.principlesLabel}</p>
+      <p class="section-intro" data-reveal="fade-up">{copy.principlesIntro}</p>
+    </div>
+
+    <div class="principles-grid" data-stagger-group>
+      {copy.principles.map((item) => (
+        <article class="principle-card" data-stagger-item>
+          <span class="principle-index">{item.index}</span>
+          <h2>{item.title}</h2>
+          <p>{item.text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="stack">
+    <div class="section-head">
+      <p class="section-kicker" data-reveal="fade-up">{copy.stackLabel}</p>
+      <p class="section-intro" data-reveal="fade-up">{copy.stackIntro}</p>
+    </div>
+
+    <div class="stack-grid" data-stagger-group>
+      {copy.stackGroups.map((group) => (
+        <article class="stack-card" data-stagger-item>
+          <h2>{group.title}</h2>
+          <ul>
+            {group.items.map((item) => {
+              const logo = techLogos[item];
+              return (
+                <li>
+                  {logo && (
+                    <img
+                      src={logo}
+                      alt=""
+                      width="24"
+                      height="24"
+                      aria-hidden="true"
+                      class:list={[
+                        'tech-logo',
+                        {
+                          'tech-logo--invert': item === 'Express',
+                          'tech-logo--softpad':
+                            item === '.NET' ||
+                            item === 'C#' ||
+                            item === 'MySQL' ||
+                            item === 'MySQL 8',
+                        },
+                      ]}
+                    />
+                  )}
+                  <span>{item}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="career">
+    <div class="section-head">
+      <p class="section-kicker" data-reveal="fade-up">{copy.careerLabel}</p>
+      <p class="section-intro" data-reveal="fade-up">{copy.careerIntro}</p>
+    </div>
+
+    <div class="career-flow" data-career-flow>
+      <div class="career-spine" data-career-spine aria-hidden="true">
+        <span class="career-dot" data-career-dot></span>
+      </div>
+
+      {copy.timeline.map((item) => (
+        <article class="career-entry" data-career-entry>
+          <div class="career-head">
+            <div class="career-role-block" data-career-copy>
+              <h2>{item.role}</h2>
+              <p class="timeline-company">{item.company}</p>
+            </div>
+            <span class="timeline-year" data-career-year>{item.year}</span>
+          </div>
+
+          <p class="timeline-desc" data-career-copy>{item.desc}</p>
+        </article>
+      ))}
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .page {
-    padding: 8rem var(--pad-x);
+  .hero,
+  .principles,
+  .stack,
+  .career {
     max-width: var(--max-w);
     margin: 0 auto;
+    padding-inline: var(--pad-x);
   }
-  .page h1 {
-    font-family: var(--font-serif);
-    font-size: var(--fs-h1);
-    font-weight: 400;
-    margin: 0 0 2rem;
+
+  .hero {
+    padding-top: 8rem;
+    padding-bottom: 4rem;
   }
-  .page p {
-    color: var(--fg-muted);
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .section-kicker,
+  .principle-index {
+    margin: 0;
     font-family: var(--font-mono);
     font-size: var(--fs-small);
+    color: var(--fg-subtle);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .hero-meta {
+    justify-content: flex-end;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(18rem, 0.95fr) minmax(0, 1.05fr);
+    gap: 4rem;
+    align-items: center;
+    margin-top: 3rem;
+  }
+
+  .hero-stage {
+    min-height: 36rem;
+  }
+
+  .hero-stage :global(.code-morph) {
+    min-height: inherit;
+  }
+
+  .section-intro,
+  .hero-intro,
+  .hero-note,
+  .principle-card p,
+  .timeline-desc {
+    margin: 0;
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+
+  .hero-copy h1 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(3.4rem, 8vw, 7.5rem);
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+  }
+
+  .hero-copy h1 span {
+    display: block;
+  }
+
+  .hero-copy .is-accent {
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .hero-avatar {
+    position: relative;
+    width: 16rem;
+    height: 16rem;
+    border-radius: 999px;
+    margin-inline: auto;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+    background: rgba(239, 226, 200, 0.07);
+  }
+
+  .avatar-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 8%;
+    border-radius: 999px;
+  }
+
+  .hero-intro,
+  .hero-note {
+    max-width: 38rem;
+    font-size: 1.02rem;
+  }
+
+  .hero-intro {
+    margin-top: 2rem;
+  }
+
+  .hero-note {
+    margin-top: 1.25rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .hero-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.7rem 1.1rem;
+    border: 1px solid var(--line);
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .hero-action:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .hero-action--outline {
+    background: transparent;
+    color: var(--fg-muted);
+    border-color: var(--line);
+  }
+
+  .hero-action--outline:hover {
+    color: var(--fg);
+    border-color: var(--fg-subtle);
+  }
+
+  .principles,
+  .stack,
+  .career {
+    padding-top: 4rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .section-intro {
+    max-width: 42rem;
+    font-size: 0.95rem;
+  }
+
+  .principles-grid,
+  .stack-grid {
+    display: grid;
+    gap: 1px;
+    margin-top: 3rem;
+    background: var(--line);
+  }
+
+  .principles-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .principle-card,
+  .stack-card {
+    background: var(--bg);
+    padding: 1.5rem;
+  }
+
+  .principle-card {
+    min-height: 15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+
+  .principle-card h2,
+  .stack-card h2,
+  .timeline-main h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+  }
+
+  .principle-card h2 {
+    font-size: clamp(1.6rem, 2.6vw, 2.3rem);
+  }
+
+  .stack-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .stack-card h2 {
+    font-size: 1.35rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stack-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .stack-card li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-muted);
+  }
+
+  .tech-logo {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    opacity: 0.9;
+    filter: none;
+  }
+
+  .tech-logo--invert {
+    filter: brightness(0) invert(1);
+    opacity: 0.82;
+  }
+
+  .tech-logo--softpad {
+    padding: 0.08rem;
+    border-radius: 0.22rem;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  .career-flow {
+    margin-top: 3rem;
+    position: relative;
+    display: grid;
+    gap: 3rem;
+    padding-top: 1rem;
+  }
+
+  .career-spine {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    max-height: 0%;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    opacity: 0;
+    background: linear-gradient(180deg, rgba(239, 226, 200, 0.18), rgba(255, 255, 255, 0.08) 75%, transparent 100%);
+    overflow: visible;
+  }
+
+  .career-dot {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 999px;
+    transform: translate(-50%, 50%);
+    background: var(--accent);
+    opacity: 0;
+    box-shadow:
+      0 0 0.35rem rgba(239, 226, 200, 0.28),
+      0 0 1.1rem rgba(239, 226, 200, 0.14);
+    animation: careerPulse 1s ease-in-out infinite;
+  }
+
+  :global(html.has-motion) .career-spine {
+    max-height: 0%;
+    opacity: 0;
+  }
+
+  :global(html.has-motion) .career-dot,
+  :global(html.has-motion) .career-entry,
+  :global(html.has-motion) .career-entry [data-career-year],
+  :global(html.has-motion) .career-entry [data-career-copy] {
+    opacity: 0;
+  }
+
+  .career-entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: 1.25rem 3rem;
+    align-items: start;
+    padding: 0 0 3rem;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+
+  .career-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-right: 2rem;
+  }
+
+  .career-role-block {
+    max-width: 22rem;
+  }
+
+  .career-role-block h2 {
+    font-size: clamp(1.4rem, 2.6vw, 2rem);
+    margin-bottom: 0.35rem;
+  }
+
+  .timeline-year {
+    flex: 0 0 auto;
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4vw, 3.6rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--fg);
+  }
+
+  .timeline-company {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  @keyframes careerPulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0.35rem rgba(239, 226, 200, 0.24),
+        0 0 0.9rem rgba(239, 226, 200, 0.12);
+    }
+    50% {
+      box-shadow:
+        0 0 0.35rem rgba(239, 226, 200, 0.34),
+        0 0 1.4rem rgba(239, 226, 200, 0.24),
+        0 0 2.4rem rgba(239, 226, 200, 0.08);
+    }
+  }
+
+  @media (max-width: 959px) {
+    .section-head {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .hero-meta {
+      justify-content: flex-start;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-stage {
+      min-height: 26rem;
+    }
+
+    .principles-grid,
+    .stack-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .career-spine {
+      left: 0;
+      transform: none;
+    }
+
+    .career-dot {
+      left: 0;
+      transform: translate(-35%, 50%);
+    }
+
+    .career-entry {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding-left: 1.75rem;
+    }
+
+    .career-head {
+      padding-right: 0;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .hero {
+      padding-top: 6.5rem;
+    }
+
+    .hero-grid {
+      gap: 2rem;
+    }
+
+    .hero-stage {
+      min-height: 22rem;
+    }
+
+    .principle-card,
+    .stack-card {
+      padding: 1.25rem;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(3rem, 14vw, 4.8rem);
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .principles-grid,
+    .stack-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .career-head {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .timeline-year {
+      font-size: clamp(1.8rem, 8vw, 2.5rem);
+    }
   }
 </style>
+

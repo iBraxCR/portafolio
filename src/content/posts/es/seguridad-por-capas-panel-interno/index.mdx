@@ -1,0 +1,88 @@
+---
+title: "Seguridad por capas para un panel interno"
+urlSlug: "es-seguridad-por-capas-panel-interno"
+lang: "es"
+excerpt: "Las herramientas internas acumulan deuda de seguridad más rápido que los productos públicos. License Manager usa cuatro capas independientes, cada una pensada para una superficie de ataque distinta."
+category: "backend"
+tags:
+  - "seguridad"
+  - "dotnet"
+  - "devops"
+  - "arquitectura"
+  - "cloudflare"
+readingTime: 5
+publishedAt: 2025-04-18
+draft: false
+---
+
+Las herramientas internas acumulan deuda de seguridad más rápido que los productos públicos.
+
+El razonamiento suele sonar así: nadie externo tiene la URL, el VPS está detrás de un firewall y los usuarios son operadores de confianza. Es comprensible. También está equivocado de una forma específica: trata la oscuridad como una capa de defensa.
+
+Cuando construí **License Manager** —el panel interno para provisionar y gestionar licencias de dos productos SaaS— tomé la decisión desde el principio de tratarlo como cualquier servicio expuesto: con capas de seguridad explícitas e independientes, cada una diseñada para una superficie de ataque distinta.
+
+Así se ve eso en la práctica, y por qué importa cada capa.
+
+## Capa 1: Cloudflare Access (zero-trust)
+
+El primer filtro vive fuera del servidor completamente.
+
+License Manager corre detrás de Cloudflare Access, lo que significa que cualquier request a `admin.treecodes.net` debe autenticarse contra un proveedor de identidad antes de que el tráfico llegue siquiera a Nginx. Una sesión válida a nivel de Cloudflare es requisito para establecer una conexión TCP con la aplicación.
+
+Esta capa detiene la clase más grande de ataques —scanners automáticos, bots de credential stuffing, intentos oportunistas— antes de que toquen código que yo controlo. Si la aplicación tiene una vulnerabilidad, solo es alcanzable por alguien que ya pasó el filtro de Cloudflare.
+
+Zero-trust aquí no significa que asuma que el operador es malicioso. Significa que no asumo que la red es segura.
+
+## Capa 2: Whitelist de IPs a nivel de aplicación
+
+El segundo filtro lo aplica la aplicación misma.
+
+Aunque una request pase Cloudflare Access, una lista de IPs autorizadas en `appsettings.json` rechaza conexiones desde direcciones que no estén explícitamente permitidas. Esto corre como middleware de ASP.NET antes de que ejecute cualquier route handler.
+
+Esta capa existe porque Cloudflare Access es un servicio de terceros. Si su configuración tiene un error, queda comprometida o se evita por un path DNS alternativo, no quiero que la aplicación quede completamente expuesta. El whitelist de IPs es un segundo checkpoint que yo controlo directamente, sin dependencias externas.
+
+Dos filtros independientes de dos sistemas distintos significa que un fallo en uno no se convierte automáticamente en una brecha.
+
+## Capa 3: Autenticación con BCrypt
+
+El tercer filtro es verificación de credenciales estándar —pero implementada correctamente.
+
+Cada cuenta de operador tiene un usuario y una contraseña hasheada con BCrypt. El login es obligatorio para acceder a cualquier ruta del panel, incluso si las dos capas anteriores ya fueron superadas.
+
+BCrypt no es novedoso, pero importa aquí por una razón específica: License Manager almacena credenciales cifradas de base de datos para cada cliente. Si la autenticación fuera débil, pasar esta capa no solo daría acceso a la UI —también daría acceso a las claves necesarias para descifrar esas credenciales. La fortaleza del hash es proporcional a la sensibilidad de lo que está detrás.
+
+## Capa 4: Contraseña maestra para datos sensibles
+
+El cuarto filtro protege un subconjunto específico de datos dentro de una sesión ya autenticada.
+
+Algunas vistas de License Manager muestran credenciales de base de datos —host, usuario y contraseña— de cada cliente. Estos datos se almacenan cifrados con ASP.NET Data Protection (clave a nivel de máquina, sin servicio de claves externo). Pero el descifrado no ocurre automáticamente cuando un usuario logueado consulta un registro.
+
+Hay que ingresar una contraseña maestra separada para revelar esos valores. Una sesión normal de operador nunca los expone.
+
+Esta capa existe porque la autenticación prueba quién eres, no qué necesitas. Una sesión comprometida no debería dar acceso irrestricto a las credenciales de todos los clientes del sistema.
+
+## Rate limiting y audit log
+
+Estos no son filtros adicionales, pero hacen que las capas anteriores funcionen mejor en la práctica.
+
+Tras 5–10 intentos de login fallidos consecutivos, la IP de origen queda bloqueada entre 30 y 60 minutos. Eso limita el valor práctico de adivinar credenciales contra la capa 3.
+
+Cada acción dentro del panel —intentos de login, revelación de credenciales, autorizaciones de dispositivos, modificaciones de licencias— queda registrada en un audit log con IP, operador, timestamp e identificador parcial de la entidad relevante. Si algo sale mal, hay un rastro.
+
+Sin audit log, las capas de arriba solo previenen el acceso. Con él, también sabes cuándo se intentó y qué ocurrió.
+
+## Lo que esto no es
+
+Esta arquitectura no es excesiva para la escala. License Manager es un panel pequeño que usan menos de cinco operadores.
+
+El objetivo no es igualar la postura de seguridad de una institución financiera. Es asegurarse de que el comportamiento del sistema sea predecible cuando ocurre algo inesperado: una regla de Cloudflare mal configurada, una cookie de sesión robada, una cuenta de operador comprometida.
+
+Las herramientas internas fallan aquí porque sus creadores asumen que el camino feliz se mantiene. La seguridad por capas no es paranoia —es aceptar que el camino feliz es solo uno de muchos estados posibles.
+
+## Una regla que ahora aplico consistentemente
+
+Si una herramienta controla infraestructura, credenciales o derechos de acceso para otros sistemas, no es una herramienta interna en ningún sentido de seguridad real. Es un plano de control.
+
+Los planos de control merecen defensa en profundidad sin importar cuántas personas los usen.
+
+El tamaño de la audiencia no cambia la superficie de ataque. Solo cambia cuántas personas conocen la URL.

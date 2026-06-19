@@ -9,44 +9,362 @@
 
   gsap.registerPlugin(ScrollTrigger);
 
-  // Respetar prefers-reduced-motion
+  const root = document.documentElement;
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  let lenis: Lenis | null = null;
+  let navAnimated = false;
+
   if (!prefersReduced) {
-    // Inicializar Lenis
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    try {
+      lenis = new Lenis({
+        lerp: 0.072,
+        wheelMultiplier: 0.88,
+        smoothWheel: true,
+        syncTouch: false,
+      });
+
+      root.classList.add('has-motion');
+
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis!.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+
+      (window as any).__lenis = lenis;
+    } catch (_error) {
+      root.classList.remove('has-motion');
+    }
+  }
+
+  function runPageAnimations() {
+    if (!lenis) return;
+
+    ScrollTrigger.getAll().forEach((st) => st.kill());
+    lenis.scrollTo(0, { immediate: true });
+    lenis.resize();
+
+    if (!navAnimated) {
+      initNavIntro();
+      navAnimated = true;
+    }
+
+     initHeroMotion();
+     initRevealMotion();
+     initStaggerMotion();
+     initCareerMotion();
+     initParallaxMotion();
+   }
+
+  if (!prefersReduced && lenis) {
+    runPageAnimations();
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    if (!prefersReduced && lenis) {
+      runPageAnimations();
+    }
+  });
+
+  function initNavIntro() {
+    const nav = document.querySelector('[data-site-nav]');
+    if (!nav) return;
+
+    const brand = nav.querySelector('[data-nav-brand]');
+    const items = nav.querySelectorAll('[data-nav-item]');
+    const lang = nav.querySelector('[data-nav-lang]');
+    const targets = [brand, ...items, lang].filter(Boolean);
+
+    if (!targets.length) return;
+
+    const tl = gsap.timeline({
+      defaults: { ease: 'power3.out' },
     });
 
-    // Integrar Lenis con GSAP ticker
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => {
-      lenis.raf(time * 1000);
+    tl.fromTo(
+      targets,
+      { autoAlpha: 0, y: 14, filter: 'blur(6px)' },
+      {
+        autoAlpha: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: 0.62,
+        stagger: 0.05,
+        clearProps: 'filter',
+      }
+    );
+  }
+
+  function initHeroMotion() {
+    document.querySelectorAll<HTMLElement>('[data-page-hero]').forEach((hero, index) => {
+      const kicker = hero.querySelector('[data-hero-kicker]');
+      const meta = hero.querySelector('[data-hero-meta]');
+      const lines = hero.querySelectorAll('[data-hero-line]');
+      const title = hero.querySelector('[data-hero-title]');
+      const copy = hero.querySelectorAll('[data-hero-copy]');
+      const cards = hero.querySelectorAll('[data-hero-card]');
+      const media = hero.querySelectorAll('[data-hero-media]');
+
+      const tl = gsap.timeline({
+        defaults: { ease: 'power4.out' },
+        delay: index === 0 ? 0.12 : 0,
+      });
+      const top = [kicker, meta].filter(Boolean);
+      const heroBlocks = [...cards, ...media];
+
+      if (top.length) {
+        tl.fromTo(
+          top,
+          { autoAlpha: 0, y: 14, filter: 'blur(5px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.56, stagger: 0.06, clearProps: 'filter' },
+          0
+        );
+      }
+
+      if (lines.length > 0) {
+        tl.fromTo(
+          lines,
+          { autoAlpha: 0, yPercent: 110 },
+          { autoAlpha: 1, yPercent: 0, duration: 0.9, stagger: 0.065 },
+          0.05
+        );
+      } else if (title) {
+        tl.fromTo(
+          title,
+          { autoAlpha: 0, y: 28, filter: 'blur(6px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.84, clearProps: 'filter' },
+          0.05
+        );
+      }
+
+      if (copy.length) {
+        tl.fromTo(
+          copy,
+          { autoAlpha: 0, y: 18, filter: 'blur(4px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.72, stagger: 0.07, clearProps: 'filter' },
+          0.22
+        );
+      }
+
+      if (heroBlocks.length) {
+        tl.fromTo(
+          heroBlocks,
+          { autoAlpha: 0, y: 20, scale: 0.985, filter: 'blur(5px)' },
+          { autoAlpha: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.8, stagger: 0.07, clearProps: 'filter' },
+          0.28
+        );
+      }
     });
-    gsap.ticker.lagSmoothing(0);
+  }
 
-    // Exponer lenis globalmente para otros componentes (ej: back-to-top)
-    (window as any).__lenis = lenis;
+  function initRevealMotion() {
+    document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
+      if (el.closest('[data-page-hero]') || el.closest('[data-stagger-group]')) return;
+      if (
+        el.querySelector(
+          ':scope > [data-stagger-group], :scope > [data-stagger-item], :scope > [data-reveal], :scope > [data-hero-card], :scope > [data-hero-copy], :scope > [data-hero-title], :scope > [data-hero-line]'
+        )
+      ) {
+        return;
+      }
 
-    // Animaciones reveal: fade-up en scroll
-    gsap.utils.toArray<HTMLElement>('.reveal').forEach((el, i) => {
+      const mode = el.dataset.reveal ?? 'fade-up';
+      const from =
+        mode === 'scale'
+          ? { autoAlpha: 0, scale: 0.985, y: 0, filter: 'blur(6px)' }
+          : mode === 'fade'
+            ? { autoAlpha: 0, y: 0, filter: 'blur(6px)' }
+            : { autoAlpha: 0, y: 20, filter: 'blur(6px)' };
+
       gsap.fromTo(
         el,
-        { opacity: 0, y: 24 },
+        from,
         {
-          opacity: 1,
+          autoAlpha: 1,
           y: 0,
-          duration: 0.7,
-          ease: 'power2.out',
-          delay: i % 4 === 0 ? 0 : (i % 4) * 0.08,
+          scale: 1,
+          filter: 'blur(0px)',
+          duration: 0.74,
+          ease: 'power3.out',
+          clearProps: 'filter',
           scrollTrigger: {
             trigger: el,
-            start: 'top 88%',
-            toggleActions: 'play none none none',
+            start: 'top 90%',
+            once: true,
           },
         }
       );
     });
   }
-</script>
+
+  function initStaggerMotion() {
+    document.querySelectorAll<HTMLElement>('[data-stagger-group]').forEach((group) => {
+      const items = group.querySelectorAll('[data-stagger-item]');
+      if (!items.length) return;
+
+      gsap.fromTo(
+        items,
+        { autoAlpha: 0, y: 20, filter: 'blur(6px)' },
+        {
+          autoAlpha: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.72,
+          ease: 'power3.out',
+          stagger: 0.065,
+          clearProps: 'filter',
+          scrollTrigger: {
+            trigger: group,
+            start: 'top 88%',
+            once: true,
+          },
+        }
+      );
+    });
+  }
+
+   function initParallaxMotion() {
+     document.querySelectorAll<HTMLElement>('[data-parallax]').forEach((el) => {
+      const target =
+        el.querySelector<HTMLElement>(':scope > img, :scope > picture, :scope > video, :scope > .parallax-inner') ??
+        el.firstElementChild;
+
+      if (!target) return;
+
+      const baseAmount = Number(el.dataset.parallax ?? '10');
+      const amount = window.innerWidth < 768 ? baseAmount * 0.55 : baseAmount;
+
+      gsap.fromTo(
+        target,
+        { yPercent: -amount },
+        {
+          yPercent: amount,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 0.6,
+          },
+        }
+       );
+     });
+   }
+
+   function initCareerMotion() {
+     document.querySelectorAll<HTMLElement>('[data-career-flow]').forEach((flow) => {
+       const spine = flow.querySelector<HTMLElement>('[data-career-spine]');
+       const dot = flow.querySelector<HTMLElement>('[data-career-dot]');
+       const entries = Array.from(flow.querySelectorAll<HTMLElement>('[data-career-entry]'));
+       const years = entries
+         .map((entry) => entry.querySelector<HTMLElement>('[data-career-year]'))
+         .filter(Boolean) as HTMLElement[];
+       const copyBlocks = entries.flatMap((entry) =>
+         Array.from(entry.querySelectorAll<HTMLElement>('[data-career-copy]'))
+       );
+
+       if (spine) {
+         gsap.set(spine, { maxHeight: '0%', autoAlpha: 0 });
+       }
+
+       if (dot) {
+         gsap.set(dot, { autoAlpha: 0, scale: 0.72 });
+       }
+
+       if (entries.length) {
+         gsap.set(entries, { autoAlpha: 0.18 });
+       }
+
+       if (years.length) {
+         gsap.set(years, { autoAlpha: 0 });
+       }
+
+       if (copyBlocks.length) {
+         gsap.set(copyBlocks, { autoAlpha: 0 });
+       }
+
+       if (spine || dot || entries.length) {
+         const careerTl = gsap.timeline({
+           scrollTrigger: {
+             trigger: flow,
+             start: 'top 72%',
+             end: 'bottom 78%',
+             scrub: true,
+             invalidateOnRefresh: true,
+           },
+         });
+
+         if (spine) {
+           careerTl.fromTo(
+             spine,
+             { maxHeight: '0%', autoAlpha: 0 },
+             { maxHeight: '100%', autoAlpha: 1, duration: 0.55, ease: 'none' },
+             0
+           );
+         }
+
+         if (dot) {
+           careerTl.fromTo(
+             dot,
+             { autoAlpha: 0, scale: 0.72 },
+             { autoAlpha: 1, scale: 1, duration: 0.18, ease: 'none' },
+             0
+           );
+         }
+
+         if (entries.length) {
+           careerTl.fromTo(
+             entries,
+             { autoAlpha: 0.18 },
+             { autoAlpha: 1, stagger: 0.1, duration: 0.32, ease: 'none' },
+             0
+           );
+         }
+       }
+
+       entries.forEach((entry, index) => {
+         const year = entry.querySelector<HTMLElement>('[data-career-year]');
+         const copy = entry.querySelectorAll<HTMLElement>('[data-career-copy]');
+         const offset = index % 2 === 0 ? -34 : 34;
+
+         if (year) {
+           gsap.fromTo(
+             year,
+             { autoAlpha: 0, x: offset, y: 24 },
+             {
+                autoAlpha: 1,
+                x: 0,
+                y: 0,
+                duration: 0.78,
+                ease: 'power3.out',
+                scrollTrigger: {
+                  trigger: entry,
+                  start: 'top 88%',
+                  once: true,
+                },
+              }
+           );
+         }
+
+         if (copy.length) {
+           gsap.fromTo(
+             copy,
+             { autoAlpha: 0, x: -offset * 0.45, y: 18 },
+             {
+                autoAlpha: 1,
+                x: 0,
+                y: 0,
+                duration: 0.72,
+                ease: 'power3.out',
+                stagger: 0.06,
+                scrollTrigger: {
+                  trigger: entry,
+                  start: 'top 88%',
+                  once: true,
+                },
+              }
+           );
+         }
+       });
+     });
+   }
+ </script>

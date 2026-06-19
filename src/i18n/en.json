@@ -2,11 +2,13 @@
   "nav": {
     "works": "Works",
     "about": "About",
-    "insights": "Insights"
+    "insights": "Insights",
+    "cv": "Download CV",
+    "email": "Write by email"
   },
   "hero": {
     "role": "Fullstack developer",
-    "location": "based in ecuador"
+    "location": "based in Costa Rica"
   },
   "works": {
     "selected": "Selected works",
@@ -26,7 +28,7 @@
   },
   "footer": {
     "backToTop": "Back to top",
-    "madeIn": "Made in Ecuador"
+    "madeIn": "Made in Costa Rica"
   },
   "common": {
     "readMore": "Read more",

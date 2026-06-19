@@ -22,6 +22,10 @@ stack:
     - "WhatsApp Cloud API"
     - "Claude AI"
     - "Google Calendar API"
+showcase:
+  phoneVideo: "/projects/agenda-ia/telefono.mp4"
+  dashboardImage: "/projects/agenda-ia/dashboard.webp"
+  calendarVideo: "/projects/agenda-ia/calendario.mp4"
 cover: ../../../../assets/projects/agenda-ia-cover.png
 featured: true
 draft: false
@@ -40,3 +44,28 @@ Agenda IA es un SaaS multi-tenant donde cada negocio suscrito recibe un número 
 ## Arquitectura
 
 El backend corre en Node.js con Express. Redis maneja la cola de mensajes entrantes para absorber picos de tráfico sin perder webhooks, y Socket.IO emite eventos en tiempo real al panel de administración —construido en React + Vite + TypeScript— donde el dueño del negocio ve las citas confirmadas, canceladas y pendientes sin necesidad de refrescar la página. La integración con Google Calendar API es bidireccional: si alguien cancela desde el panel, el evento se elimina del calendario y el bot notifica al cliente por WhatsApp. MySQL almacena el historial de conversaciones, la configuración por tenant y las reglas de disponibilidad (horarios, servicios, duración por tipo de cita). El modelo multi-tenant se resuelve a nivel de base de datos con un campo `tenant_id` en todas las tablas críticas, y los webhooks de WhatsApp se enrutan por número de teléfono al contexto correcto.
+
+## Decisiones clave
+
+Tres decisiones de producto marcaron más el sistema que la stack misma:
+
+- **Quedarse dentro de WhatsApp** en lugar de crear un nuevo canal de reservas. El objetivo no era enseñar otra interfaz, sino automatizar la que el cliente ya usa todos los días.
+- **Responder rápido y procesar después**. La recepción del webhook tenía que separarse de la lógica de IA y calendario para poder confirmar el mensaje de inmediato y terminar el trabajo pesado de forma asíncrona.
+- **Tratar cada negocio como su propio contexto operativo**. Colas, configuración, horarios y conversaciones tenían que respetar fronteras por tenant para que un cliente con mucho volumen no degradara a los demás.
+
+## Restricciones de producto
+
+Agenda IA no era solo un problema de chatbot. También tenía que resolver ambigüedad operativa:
+
+1. Las personas escriben solicitudes en lenguaje natural desordenado
+2. Cada negocio maneja horarios, servicios y duraciones distintas
+3. Dos clientes pueden pedir el mismo espacio casi al mismo tiempo
+4. El dueño necesita confiar en el resultado sin supervisar manualmente cada mensaje
+
+Eso obligó a que el producto fuera conservador. El sistema no intenta sonar mágico primero; intenta ser correcto primero y natural después.
+
+## Resultado
+
+El resultado es un flujo de reservas que se siente conversacional para el cliente y estructurado para el negocio. De un lado, el usuario manda un mensaje por WhatsApp en lenguaje natural y recibe confirmación en el mismo hilo. Del otro, el negocio obtiene una capa operativa sincronizada: actualizaciones en tiempo real, consistencia con calendario, configuración centralizada por tenant y una tubería de mensajes con cola que mantiene el sistema responsivo bajo carga.
+
+La parte más fuerte del proyecto no es la etiqueta de IA. Es la forma en que interfaz, infraestructura y operación terminan comportándose como un solo producto.

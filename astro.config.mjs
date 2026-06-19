@@ -13,6 +13,12 @@ export default defineConfig({
   redirects: {
     '/': '/es/',
   },
+  markdown: {
+    shikiConfig: {
+      theme: 'vitesse-dark',
+      wrap: false,
+    },
+  },
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],

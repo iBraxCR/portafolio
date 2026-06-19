@@ -1,8 +1,8 @@
 ---
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Meta from '../../components/Meta.astro';
-import ProjectCard from '../../components/ProjectCard.astro';
 import { t, locales, isLocale, type Locale } from '../../lib/i18n';
 
 export function getStaticPaths() {
@@ -25,99 +25,760 @@ const allProjects = await getCollection('projects', ({ data }) =>
   data.lang === lang && data.featured && !data.draft
 );
 const featured = allProjects.sort((a, b) => a.data.number - b.data.number);
+const [leadProject, ...archiveProjects] = featured;
+const currentYear = new Date().getFullYear();
+
+const copy = {
+  es: {
+    sectionLabel: '01 / Portafolio',
+    selectedCount: 'casos seleccionados',
+    heading: ['Software', 'con criterio visual', 'y ejecución real.'],
+    intro:
+      'Diseño y construyo productos, herramientas internas y experiencias web donde interfaz, sistema y performance tienen que empujar hacia el mismo lado.',
+    primaryCta: 'Ver trabajos',
+    secondaryCta: 'Sobre mí',
+    footerNote: 'Base en Costa Rica. Trabajo entre producto, frontend, backend e implementación.',
+    availability: 'Disponibilidad limitada para colaboraciones selectas en 2026.',
+    capabilitiesLabel: '02 / Enfoque',
+    capabilitiesIntro:
+      'La referencia correcta no es “verse moderno”; es que la interfaz tenga intención, el sistema aguante y el producto se sienta resuelto.',
+    capabilities: [
+      {
+        index: '01',
+        title: 'Dirección',
+        text: 'Defino jerarquía, tono visual y estructura para que el trabajo se sienta autoral y no armado con bloques genéricos.',
+      },
+      {
+        index: '02',
+        title: 'Producto',
+        text: 'Diseño flujos, estados y componentes pensando en uso real, operación diaria y claridad al momento de escalar.',
+      },
+      {
+        index: '03',
+        title: 'Implementación',
+        text: 'Resuelvo frontend, backend e integraciones para que el concepto sobreviva al paso a producción.',
+      },
+    ],
+    leadLabel: '03 / Proyecto destacado',
+    leadIntro:
+      'Un caso donde automatización, experiencia de usuario y arquitectura fullstack tenían que sentirse como una sola pieza.',
+    viewCase: 'Abrir caso',
+    archiveLabel: '04 / Archivo',
+    archiveIntro:
+      'Más trabajo en formato editorial: herramientas, plataformas y sistemas con foco en utilidad, operación y claridad.',
+    rowCta: 'Ver proyecto',
+  },
+  en: {
+    sectionLabel: '01 / Portfolio',
+    selectedCount: 'selected cases',
+    heading: ['Software', 'with visual judgment', 'and real execution.'],
+    intro:
+      'I design and build products, internal tools and web experiences where interface, system design and performance all need to pull in the same direction.',
+    primaryCta: 'View works',
+    secondaryCta: 'About me',
+    footerNote: 'Based in Costa Rica. Working across product, frontend, backend and implementation.',
+    availability: 'Limited availability for selected collaborations in 2026.',
+    capabilitiesLabel: '02 / Approach',
+    capabilitiesIntro:
+      'The right reference is not “looking modern”; it is having an interface with intent, a system that holds up and a product that feels resolved.',
+    capabilities: [
+      {
+        index: '01',
+        title: 'Direction',
+        text: 'I shape hierarchy, tone and visual structure so the work feels authored instead of assembled from generic blocks.',
+      },
+      {
+        index: '02',
+        title: 'Product',
+        text: 'I design flows, states and components for real usage, daily operations and long-term clarity as the product grows.',
+      },
+      {
+        index: '03',
+        title: 'Implementation',
+        text: 'I handle frontend, backend and integrations so the original concept survives contact with production.',
+      },
+    ],
+    leadLabel: '03 / Featured project',
+    leadIntro:
+      'A case where automation, user experience and fullstack architecture had to read as a single, cohesive product.',
+    viewCase: 'Open case',
+    archiveLabel: '04 / Archive',
+    archiveIntro:
+      'More work in editorial form: tools, platforms and systems built around usefulness, operations and clarity.',
+    rowCta: 'View project',
+  },
+}[lang];
+
+const categoryLabels: Record<string, { es: string; en: string }> = {
+  'web-app': { es: 'Web app', en: 'Web app' },
+  landing: { es: 'Landing', en: 'Landing' },
+  'brand-web': { es: 'Brand web', en: 'Brand web' },
+  api: { es: 'API', en: 'API' },
+  tool: { es: 'Tool', en: 'Tool' },
+};
+
+function cleanSlug(urlSlug: string) {
+  return urlSlug.replace(/^(es|en)-/, '');
+}
+
+function formatCategory(category: string) {
+  return categoryLabels[category]?.[lang] ?? category.replace('-', ' ');
+}
+
+function stackPreview(entry: (typeof featured)[number]) {
+  return [
+    ...(entry.data.stack.frontend ?? []),
+    ...(entry.data.stack.backend ?? []),
+    ...(entry.data.stack.infra ?? []),
+  ]
+    .slice(0, 5)
+    .join(' · ');
+}
 ---
 
 <BaseLayout title={title} description={description} lang={lang}>
-  <section class="hero reveal">
-    <h1>Joschua Barahona</h1>
-    <p class="role">{t('hero.role', lang)}</p>
-    <Meta items={[t('hero.location', lang)]} class="location" />
+  <section class="hero" data-page-hero>
+    <div class="hero-shell">
+      <div class="hero-topline">
+        <p class="section-kicker" data-hero-kicker>{copy.sectionLabel}</p>
+        <Meta
+          items={[t('hero.role', lang), t('hero.location', lang), `${featured.length} ${copy.selectedCount}`]}
+          class="hero-meta"
+          data-hero-meta
+        />
+      </div>
+
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>
+            {copy.heading.map((line, index) => (
+              <span class="line-mask" data-hero-line-mask>
+                <span class:list={['line-text', { 'is-accent': index === copy.heading.length - 1 }]} data-hero-line>
+                  {line}
+                </span>
+              </span>
+            ))}
+          </h1>
+        </div>
+
+        <div class="hero-aside">
+          <div class="hero-portrait">
+            <img src="/yo.png" alt="Joschua Barahona" width="560" height="700" class="portrait-img" />
+            <div class="portrait-grain" aria-hidden="true"></div>
+          </div>
+
+          <p class="hero-intro" data-hero-copy>{copy.intro}</p>
+
+          <div class="hero-actions" data-hero-copy>
+            <a href={`/${lang}/works/`} class="hero-action is-primary">
+              {copy.primaryCta}
+            </a>
+            <a href={`/${lang}/about/`} class="hero-action">
+              {copy.secondaryCta}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-footer">
+        <p data-hero-copy>{copy.footerNote}</p>
+        <Meta items={[`2021—${currentYear}`, copy.availability]} class="hero-status" data-hero-copy />
+      </div>
+    </div>
   </section>
 
-  <section class="works">
-    <div class="works-grid">
-      {featured.map((entry) => {
-        const cleanSlug = entry.data.urlSlug.replace(/^(es|en)-/, '');
-        return (
-          <ProjectCard
-            title={entry.data.title}
-            slug={cleanSlug}
-            lang={lang}
-            number={entry.data.number}
-            year={entry.data.year}
-            category={entry.data.category}
-            cover={entry.data.cover}
-            coverHover={entry.data.coverHover}
-          />
-        );
-      })}
+  <section class="capabilities">
+    <div class="section-head">
+      <p class="section-kicker" data-reveal="fade-up">{copy.capabilitiesLabel}</p>
+      <p class="section-intro" data-reveal="fade-up">{copy.capabilitiesIntro}</p>
     </div>
-    <div class="works-more">
-      <a href={`/${lang}/works/`}>&#8594; {t('works.all', lang)}</a>
+
+    <div class="capabilities-grid" data-stagger-group>
+      {copy.capabilities.map((item) => (
+        <article class="capability-card" data-stagger-item>
+          <span class="capability-index">{item.index}</span>
+          <h2>{item.title}</h2>
+          <p>{item.text}</p>
+        </article>
+      ))}
     </div>
   </section>
+
+  {leadProject && (
+    <section class="lead">
+      <div class="section-head">
+        <p class="section-kicker" data-reveal="fade-up">{copy.leadLabel}</p>
+        <p class="section-intro" data-reveal="fade-up">{copy.leadIntro}</p>
+      </div>
+
+      <article class="lead-card" data-reveal="scale">
+        <a href={`/${lang}/works/${cleanSlug(leadProject.data.urlSlug)}/`} class="lead-link">
+          <div class="lead-media" data-parallax="8">
+            {leadProject.data.cover ? (
+              <Image
+                src={leadProject.data.cover}
+                alt={leadProject.data.title}
+                widths={[720, 1080, 1440]}
+                sizes="(max-width: 959px) 100vw, 60vw"
+              />
+            ) : (
+              <div class="lead-placeholder" />
+            )}
+          </div>
+
+          <div class="lead-body">
+            <Meta
+              items={[
+                String(leadProject.data.number).padStart(2, '0'),
+                formatCategory(leadProject.data.category),
+                leadProject.data.year,
+              ]}
+            />
+
+            <h2>{leadProject.data.title}</h2>
+            <p class="lead-description">{leadProject.data.description}</p>
+            <p class="lead-stack">{stackPreview(leadProject)}</p>
+
+            <span class="lead-cta">{copy.viewCase} →</span>
+          </div>
+        </a>
+      </article>
+    </section>
+  )}
+
+  {archiveProjects.length > 0 && (
+    <section class="archive">
+      <div class="section-head">
+        <p class="section-kicker" data-reveal="fade-up">{copy.archiveLabel}</p>
+        <p class="section-intro" data-reveal="fade-up">{copy.archiveIntro}</p>
+      </div>
+
+      <div class="archive-list" data-stagger-group>
+        {archiveProjects.map((entry) => (
+          <a href={`/${lang}/works/${cleanSlug(entry.data.urlSlug)}/`} class="archive-row" data-stagger-item>
+            <span class="archive-number">{String(entry.data.number).padStart(2, '0')}</span>
+
+            <div class="archive-main">
+              <h3>{entry.data.title}</h3>
+              <p>{entry.data.description}</p>
+            </div>
+
+            <div class="archive-meta">
+              <span>{formatCategory(entry.data.category)}</span>
+              <span>{entry.data.year}</span>
+              <span>{copy.rowCta} →</span>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <div class="works-more" data-reveal="fade-up">
+        <a href={`/${lang}/works/`}>&#8594; {t('works.all', lang)}</a>
+      </div>
+    </section>
+  )}
 </BaseLayout>
 
 <style>
-  .hero {
-    padding: 8rem var(--pad-x) 6rem;
+  .hero,
+  .capabilities,
+  .lead,
+  .archive {
     max-width: var(--max-w);
     margin: 0 auto;
+    padding-inline: var(--pad-x);
   }
-  .hero h1 {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display);
-    font-weight: 400;
-    line-height: 0.95;
-    letter-spacing: -0.03em;
+
+  .hero {
+    position: relative;
+    min-height: calc(100svh - 80px);
+    padding-top: 8rem;
+    padding-bottom: 4rem;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at top right, rgba(232, 227, 216, 0.08), transparent 36%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 45%);
+    pointer-events: none;
+  }
+
+  .hero-shell {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: inherit;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 4rem;
+  }
+
+  .hero-topline,
+  .hero-footer,
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .section-kicker {
     margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-subtle);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
-  .hero .role {
-    margin: 1.5rem 0 0;
-    font-size: var(--fs-h2);
+
+  .hero-meta {
+    justify-content: flex-end;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.7fr);
+    gap: 4rem;
+    align-items: end;
+  }
+
+  .hero-copy h1 {
+    margin: 0;
     font-family: var(--font-serif);
-    font-weight: 300;
-    font-style: italic;
-    color: var(--fg-muted);
+    font-size: clamp(3.8rem, 9vw, 9.6rem);
+    font-weight: 400;
+    line-height: 0.88;
+    letter-spacing: -0.05em;
   }
-  .hero .location {
+
+  .hero-copy h1 span {
     display: block;
+  }
+
+  .hero-copy .is-accent {
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .hero-aside {
+    max-width: 30rem;
+    justify-self: center;
+    width: 100%;
+  }
+
+  .hero-portrait {
+    position: relative;
+    width: 28rem;
+    height: 28rem;
+    border-radius: 999px;
+    margin-inline: auto;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+    background: rgba(239, 226, 200, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .portrait-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 8%;
+    border-radius: 999px;
+  }
+
+  .portrait-grain {
+    display: none;
+  }
+
+  .hero-intro,
+  .section-intro,
+  .capability-card p,
+  .lead-description,
+  .archive-main p {
+    margin: 0;
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+
+  .hero-intro {
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
     margin-top: 2rem;
   }
 
-  .works {
+  .hero-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.7rem 1.1rem;
+    border: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg);
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .hero-action.is-primary,
+  .hero-action:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+
+  .hero-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    align-items: flex-end;
+  }
+
+  .hero-footer p {
+    max-width: 38rem;
+    margin: 0;
+    color: var(--fg-muted);
+  }
+
+  .hero-status {
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .capabilities,
+  .lead,
+  .archive {
+    padding-top: 4rem;
     border-top: 1px solid var(--line);
   }
 
-  .works-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
+  .section-intro {
+    max-width: 42rem;
+    font-size: 0.95rem;
   }
 
-  @media (max-width: 767px) {
-    .works-grid {
-      grid-template-columns: 1fr;
-    }
+  .capabilities-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 3rem;
+    background: var(--line);
+  }
+
+  .capability-card {
+    min-height: 16rem;
+    padding: 1.5rem;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    position: relative;
+  }
+
+  .capability-card::before,
+  .lead-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.5rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0.9;
+    z-index: 2;
+  }
+
+  .capability-index,
+  .archive-number,
+  .archive-meta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg-subtle);
+  }
+
+  .capability-card h2,
+  .lead-body h2,
+  .archive-main h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .capability-card h2 {
+    font-size: clamp(1.6rem, 2.4vw, 2.25rem);
+  }
+
+  .lead-card {
+    margin-top: 3rem;
+    background: var(--bg-elev);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lead-link {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
+    color: inherit;
+  }
+
+  .lead-media {
+    position: relative;
+    min-height: 34rem;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  .lead-media :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-out);
+    filter: saturate(0.93) contrast(1.03);
+  }
+
+  .lead-media::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 30%, rgba(0, 0, 0, 0.18) 100%),
+      linear-gradient(135deg, rgba(239, 226, 200, 0.08), transparent 44%),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 3px);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .lead-media::after {
+    content: '';
+    position: absolute;
+    inset: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .lead-link:hover .lead-media :global(img) {
+    transform: scale(1.03);
+  }
+
+  .lead-placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--bg-elev), var(--bg));
+  }
+
+  .lead-body {
+    padding: clamp(1.75rem, 4vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0)),
+      rgba(10, 10, 10, 0.34);
+    backdrop-filter: blur(14px);
+  }
+
+  .lead-body h2 {
+    font-size: clamp(2.6rem, 5vw, 4.6rem);
+  }
+
+  .lead-stack {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--fg-subtle);
+    line-height: 1.7;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .lead-cta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--fg);
+  }
+
+  .archive-list {
+    margin-top: 3rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .archive-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1.5rem 2rem;
+    align-items: start;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .archive-row:hover {
+    color: var(--accent);
+    transform: translateX(0.35rem);
+  }
+
+  .archive-row::before {
+    content: '';
+    position: absolute;
+    left: -0.35rem;
+    top: 1.25rem;
+    bottom: 1.25rem;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(239, 226, 200, 0.65), transparent);
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .archive-row:hover::before {
+    opacity: 1;
+  }
+
+  .archive-list:hover .archive-row:not(:hover) {
+    opacity: 0.58;
+  }
+
+  .archive-main {
+    max-width: 42rem;
+  }
+
+  .archive-main h3 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    margin-bottom: 0.75rem;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .archive-row:hover .archive-main h3 {
+    transform: translateX(0.18rem);
+  }
+
+  .archive-meta {
+    min-width: 14rem;
+    display: grid;
+    gap: 0.4rem;
+    justify-items: end;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .works-more {
-    max-width: var(--max-w);
-    margin: 0 auto;
-    padding: 2.5rem var(--pad-x) 5rem;
+    padding: 2.5rem 0 0;
     font-family: var(--font-mono);
     font-size: var(--fs-small);
     color: var(--fg-muted);
-    border-top: 1px solid var(--line);
   }
 
   .works-more a {
     color: var(--fg);
-    text-decoration: none;
     transition: color var(--dur-fast) var(--ease-out);
   }
 
   .works-more a:hover {
     color: var(--accent);
   }
+
+  @media (max-width: 959px) {
+    .hero {
+      min-height: auto;
+      padding-top: 6.5rem;
+    }
+
+    .hero-grid,
+    .lead-link,
+    .archive-row,
+    .hero-topline,
+    .hero-footer,
+    .section-head {
+      grid-template-columns: 1fr;
+      display: grid;
+    }
+
+    .hero-aside {
+      max-width: none;
+      justify-self: start;
+    }
+
+    .hero-meta,
+    .hero-status {
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .hero-footer {
+      align-items: start;
+    }
+
+    .capabilities-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .lead-media {
+      min-height: 22rem;
+    }
+
+    .archive-row {
+      gap: 1rem;
+    }
+
+    .archive-meta {
+      min-width: 0;
+      justify-items: start;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .hero-copy h1 {
+      font-size: clamp(3rem, 16vw, 4.8rem);
+      line-height: 0.94;
+    }
+
+    .hero-shell {
+      gap: 3rem;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .hero-action {
+      width: 100%;
+    }
+
+    .capability-card,
+    .lead-body {
+      padding: 1.25rem;
+    }
+
+    .archive-main h3 {
+      margin-bottom: 0.5rem;
+    }
+  }
 </style>
+

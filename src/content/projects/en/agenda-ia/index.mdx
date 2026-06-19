@@ -22,6 +22,10 @@ stack:
     - "WhatsApp Cloud API"
     - "Claude AI"
     - "Google Calendar API"
+showcase:
+  phoneVideo: "/projects/agenda-ia/telefono.mp4"
+  dashboardImage: "/projects/agenda-ia/dashboard.webp"
+  calendarVideo: "/projects/agenda-ia/calendario.mp4"
 cover: ../../../../assets/projects/agenda-ia-cover.png
 featured: true
 draft: false
@@ -40,3 +44,28 @@ Agenda IA is a multi-tenant SaaS where each subscribed business gets a dedicated
 ## Architecture
 
 The backend runs on Node.js with Express. Redis handles the incoming message queue to absorb traffic spikes without dropping webhooks, and Socket.IO pushes real-time events to the admin dashboard — built with React, Vite, and TypeScript — where business owners see confirmed, cancelled, and pending appointments without refreshing the page. The Google Calendar API integration is bidirectional: if an appointment is cancelled from the dashboard, the event is removed from the calendar and the bot notifies the customer over WhatsApp. MySQL stores the conversation history, per-tenant configuration, and availability rules (schedules, services, duration per appointment type). Multi-tenancy is implemented at the database level with a `tenant_id` column on all critical tables, and incoming WhatsApp webhooks are routed by phone number to the correct tenant context.
+
+## Key decisions
+
+Three product decisions shaped the system more than the stack itself:
+
+- **Stay inside WhatsApp** instead of building a new booking channel. The goal was not to teach customers a new interface; it was to automate the one they already use every day.
+- **Respond fast, process later**. Webhook reception had to be decoupled from AI and calendar logic so the system could acknowledge messages immediately and finish the heavy work asynchronously.
+- **Treat each business as its own operational context**. Queues, configuration, schedules and conversations all had to respect tenant boundaries so one busy client would not degrade the rest.
+
+## Product constraints
+
+Agenda IA was not only a chatbot problem. It had to solve for operational ambiguity:
+
+1. People write requests in messy natural language
+2. Businesses use different schedules, services and durations
+3. Two customers can ask for the same slot at nearly the same time
+4. Owners need to trust the result without supervising every message manually
+
+That forced the product to be conservative. The system does not try to sound magical first; it tries to be correct first, then natural.
+
+## Outcome
+
+The result is a booking flow that feels conversational to the customer and structured to the business owner. On one side, the user sends a WhatsApp message in plain language and receives a confirmation in the same thread. On the other, the business gets a synchronized operational layer: real-time admin updates, calendar consistency, centralized tenant configuration and a queue-backed message pipeline that keeps the system responsive under load.
+
+The strongest part of the project is not the AI label. It is the way interface, infrastructure and operations were made to behave like one product.
